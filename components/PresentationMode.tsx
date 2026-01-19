@@ -92,8 +92,8 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
                 <div className="w-full h-full max-w-7xl flex flex-col relative z-10 px-4 py-4 md:px-20 md:py-8">
                     {/* Category Selector Toolbar */}
-                    <div className="flex flex-col items-center gap-4 mb-10">
-                        {categories.length > 0 ? (
+                    {categories.length > 0 && (
+                        <div className="flex flex-col items-center gap-4 mb-6">
                             <div className="flex flex-wrap items-center justify-center gap-3">
                                 <button 
                                     onClick={() => setSelectedCategory(null)}
@@ -127,14 +127,10 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                     </React.Fragment>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="bg-white/5 border-2 border-dashed border-white/20 px-8 py-4 rounded-3xl">
-                                <p className="text-white/30 font-bold text-sm tracking-widest uppercase">No categorical filters available for this segment</p>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    <div className="flex-1 flex flex-col items-center justify-center min-h-0 space-y-4 md:space-y-8">
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-0">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={`${currentSlide}-${selectedCategory?.val}-${customXAxis}-${customYAxis}`}
@@ -144,24 +140,16 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                 transition={{ type: 'spring', damping: 25, stiffness: 120 }}
                                 className="w-full h-full flex flex-col items-center justify-center min-h-0"
                             >
-                                <div className="text-center space-y-4 mb-8">
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="inline-block px-4 py-1 bg-primary/20 text-primary border-2 border-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-2"
-                                    >
-                                        Comparing {customYAxis} by {customXAxis}
-                                    </motion.div>
+                                <div className="text-center mb-6">
                                     <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
                                         {selectedCategory ? (
                                             <>
                                                 <span className="text-primary underline decoration-white/20">{selectedCategory.val}</span>
-                                                <span className="block text-xl sm:text-3xl mt-4 text-white/40 font-bold normal-case tracking-normal opacity-60">Analysis of {customYAxis}</span>
                                             </>
                                         ) : (
                                             <>
                                                 {SLIDE_TYPES[currentSlide]} 
-                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Global {customYAxis}</span>
+                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">View</span>
                                             </>
                                         )}
                                     </h2>
