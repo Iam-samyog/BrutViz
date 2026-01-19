@@ -237,6 +237,9 @@ export default function Dashboard() {
   if (data.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
+        {/* Navbar */}
+        <Navbar onHistoryClick={() => setIsHistoryOpen(true)} />
+
         <main className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Grid Accent */}
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
