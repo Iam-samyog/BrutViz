@@ -15,6 +15,7 @@ import { toPng } from "html-to-image";
 import Papa from "papaparse";
 import QRCode from "react-qr-code";
 import DataInput from "@/components/DataInput";
+import ManualTableCreator from "@/components/ManualTableCreator";
 import DataTable from "@/components/DataTable";
 import ChartGenerator from "@/components/ChartGenerator";
 import InsightsPanel from "@/components/InsightsPanel";
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [isStickersOpen, setIsStickersOpen] = useState(false);
   const [isPresentationModeOpen, setIsPresentationModeOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isManualMode, setIsManualMode] = useState(false);
 
   const activeData = transformedData || data;
 
@@ -235,6 +237,23 @@ export default function Dashboard() {
   }
 
   if (data.length === 0) {
+    // Manual Table Creation Mode
+    if (isManualMode) {
+      return (
+        <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 p-4">
+          <ManualTableCreator 
+            onConfirm={(manualData, manualFileName) => {
+              setData(manualData);
+              setFileName(manualFileName);
+              saveToHistory(manualData, manualFileName);
+              setIsManualMode(false);
+            }}
+            onCancel={() => setIsManualMode(false)}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
         {/* Navbar */}
@@ -309,7 +328,7 @@ export default function Dashboard() {
                     <div className="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-3xl -z-10" />
                     <DataInput onDataParsed={handleDataParsed} />
                     
-                    <div className="mt-6 flex justify-center">
+                    <div className="mt-6 flex flex-wrap justify-center gap-4">
                         <button 
                             onClick={async () => {
                                 const response = await fetch('/demo_data.csv');
@@ -329,6 +348,14 @@ export default function Dashboard() {
                         >
                             <Play className="w-4 h-4 text-primary" />
                             Use Demo Dataset
+                        </button>
+
+                        <button 
+                            onClick={() => setIsManualMode(true)}
+                            className="flex items-center gap-2 px-6 py-3 bg-black text-white border-2 border-black rounded-xl font-bold hover:shadow-neo hover:translate-y-[-2px] transition-all"
+                        >
+                            <TableIcon className="w-4 h-4" />
+                            Build Manual Table
                         </button>
                     </div>
                 </div>
