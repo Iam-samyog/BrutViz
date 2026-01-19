@@ -268,7 +268,7 @@ export default function Dashboard() {
             {/* Dynamic Animated Background (70+ Balls with Popping Entry) */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                 {Array.from({ length: 70 }).map((_, i) => {
-                    const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]'];
+                    const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]', 'bg-[#FFCC00]', 'bg-[#FF9500]'];
                     const size = Math.random() * 60 + 20;
                     const color = colors[Math.floor(Math.random() * colors.length)];
                     const top = Math.random() * 100 + '%';
@@ -282,7 +282,7 @@ export default function Dashboard() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ 
                                 scale: [0, 1.2, 1, 1.1, 1],
-                                opacity: [0, 0.2, 0.05, 0.15, 0.05],
+                                opacity: [0, 0.5, 0.2, 0.4, 0.15],
                                 y: [0, Math.random() * -50 - 20, 0],
                                 x: [0, Math.random() * 20 - 10, 0]
                             }}
@@ -292,7 +292,7 @@ export default function Dashboard() {
                                 y: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.8 },
                                 x: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.8 }
                             }}
-                            className={`absolute rounded-full border-2 border-black shadow-neo-sm ${color}`}
+                            className={`absolute rounded-full border-2 border-black/20 shadow-lg ${color}`}
                             style={{ 
                                 top, 
                                 left, 
