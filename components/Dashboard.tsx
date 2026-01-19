@@ -307,6 +307,29 @@ export default function Dashboard() {
                 <div className="relative">
                     <div className="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-3xl -z-10" />
                     <DataInput onDataParsed={handleDataParsed} />
+                    
+                    <div className="mt-6 flex justify-center">
+                        <button 
+                            onClick={async () => {
+                                const response = await fetch('/demo_data.csv');
+                                const text = await response.text();
+                                Papa.parse(text, {
+                                    header: true,
+                                    dynamicTyping: true,
+                                    skipEmptyLines: true,
+                                    complete: (results) => {
+                                        setData(results.data);
+                                        setFileName("demo_data.csv");
+                                        saveToHistory(results.data, "demo_data.csv");
+                                    }
+                                });
+                            }}
+                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-black rounded-xl font-bold hover:shadow-neo hover:translate-y-[-2px] transition-all"
+                        >
+                            <Play className="w-4 h-4 text-primary" />
+                            Use Demo Dataset
+                        </button>
+                    </div>
                 </div>
 
                 {/* How to Use Section */}
