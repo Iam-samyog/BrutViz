@@ -443,16 +443,16 @@ export default function Dashboard() {
 
       <div className="relative z-10 space-y-6 md:space-y-8">
       {/* Header */}
-      <header className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b-2 border-[rgba(0,0,0,0.1)]">
+      <header className="flex flex-col md:flex-row items-center justify-between gap-6 p-4 md:p-6 bg-black border-4 border-black rounded-[2rem] shadow-neo">
         <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary text-white border-2 border-black rounded-lg shadow-neo-sm">
+            <div className="p-3 bg-primary text-white border-2 border-white rounded-lg shadow-neo-sm">
                 <LayoutDashboard className="w-6 h-6" />
             </div>
             <div className="min-w-0">
-                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-black truncate max-w-[200px] md:max-w-none" title={fileName}>{fileName}</h1>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white truncate max-w-[200px] md:max-w-none" title={fileName}>{fileName}</h1>
                 {transformedData && (
-                    <p className="text-sm font-bold text-[rgba(0,0,0,0.5)] flex items-center gap-2">
-                        <span className="text-[10px] md:text-xs bg-black text-white px-2 py-0.5 rounded-full whitespace-nowrap">Transformed</span>
+                    <p className="text-sm font-bold text-white/50 flex items-center gap-2">
+                        <span className="text-[10px] md:text-xs bg-white text-black px-2 py-0.5 rounded-full whitespace-nowrap">Transformed</span>
                     </p>
                 )}
             </div>
