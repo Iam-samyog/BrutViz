@@ -751,30 +751,27 @@ export default function Dashboard() {
         onAddSticker={handleAddSticker}
       />
 
-      <PresentationMode
-        data={activeData}
-        isOpen={isPresentationModeOpen}
-        onClose={() => setIsPresentationModeOpen(false)}
+      <PresentationMode 
+        data={activeData} 
+        isOpen={isPresentationModeOpen} 
+        onClose={() => setIsPresentationModeOpen(false)} 
       />
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      </div>
+
+      {/* Decorative Blobs */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
-          className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-        ></motion.div>
+          animate={{ scale: 1, opacity: 0.2 }}
+          transition={{ delay: 0.2, duration: 2, ease: "easeOut" }}
+          className="absolute -bottom-20 -left-20 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-3xl"
+        />
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5, ease: "easeOut" }}
-          className="absolute -top-20 -right-20 w-64 h-64 bg-secondary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"
-        ></motion.div>
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5, ease: "easeOut" }}
-          className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-tertiary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"
-        ></motion.div>
+          animate={{ scale: 1, opacity: 0.2 }}
+          transition={{ delay: 0.4, duration: 2, ease: "easeOut" }}
+          className="absolute -top-20 -right-20 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-3xl"
+        />
       </div>
     </div>
   );
