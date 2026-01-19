@@ -57,7 +57,7 @@ export default function InsightsPanel({ data }: { data: any[] }) {
                 <h4 className="font-black text-xs uppercase tracking-[0.15em] text-black/40">{insight.title}</h4>
                 {insight.score && insight.score >= 7 && (
                     <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-primary text-white">
-                        ⭐ Key
+                        Key
                     </span>
                 )}
               </div>
