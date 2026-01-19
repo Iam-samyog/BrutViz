@@ -15,15 +15,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onHistoryClick }) => {
                     <span className="text-2xl font-black tracking-tighter text-white">BrutViz.</span>
                 </div>
                 <div className="flex items-center gap-3 md:gap-4 text-white">
-                    <button 
-                        onClick={onHistoryClick}
-                        className="p-2 bg-white text-black border-2 border-black rounded-lg shadow-neo-sm hover:translate-y-[-2px] transition-all"
-                        title="History"
-                    >
-                        <Clock className="w-5 h-5" />
-                    </button>
+                   
 
-                    <a href="https://github.com" target="_blank" className="p-2 bg-white text-black border-2 border-black rounded-lg shadow-neo-sm hover:translate-y-[-2px] transition-all">
+                    <a href="https://github.com/Iam-samyog/BrutViz" target="_blank" className="p-2 bg-white text-black border-2 border-black rounded-lg shadow-neo-sm hover:translate-y-[-2px] transition-all">
                         <Github className="w-5 h-5" />
                     </a>
                 </div>
