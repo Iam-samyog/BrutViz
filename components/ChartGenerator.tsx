@@ -209,57 +209,74 @@ export default function ChartGenerator({
   return (
     <div className={cn("space-y-6", fullHeight && "h-full space-y-0 flex flex-col")}>
       {!hideConfig && (
-        <div className="bg-white p-5 rounded-xl border-2 border-black shadow-neo-sm flex flex-wrap gap-6 items-center justify-between">
-        <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary text-white border-2 border-black rounded-lg shadow-sm">
-                <BarChart3 className="w-5 h-5" />
+        <div className="bg-white p-4 sm:p-5 rounded-xl border-2 border-black shadow-neo-sm space-y-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary text-white border-2 border-black rounded-lg shadow-sm">
+                  <BarChart3 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-bold text-lg text-black block">Chart Config</span>
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Select your dimensions to analyze</span>
+              </div>
             </div>
-            <span className="font-bold text-lg text-black">Chart Config</span>
-        </div>
+          </div>
         
-        <div className="grid grid-cols-2 md:flex md:gap-4 gap-3 w-full md:w-auto">
-            <div className="space-y-1 col-span-2 md:col-span-1">
-                <label className="text-[10px] font-black text-black ml-1 uppercase opacity-50">Chart Type</label>
-                <select
-                className="block w-full p-2.5 rounded-lg border-2 border-black bg-white focus:shadow-neo outline-none transition-all text-sm cursor-pointer font-bold"
-                value={chartType}
-                onChange={(e) => setChartType(e.target.value as any)}
-                >
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="area">Area Chart</option>
-                <option value="pie">Pie Chart</option>
-                </select>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center text-[8px]">📊</span>
+                    Chart Type
+                  </label>
+                  <select
+                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
+                  value={chartType}
+                  onChange={(e) => setChartType(e.target.value as any)}
+                  >
+                  <option value="bar">Bar Chart</option>
+                  <option value="line">Line Chart</option>
+                  <option value="area">Area Chart</option>
+                  <option value="pie">Pie Chart</option>
+                  </select>
+              </div>
 
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-black ml-1 uppercase opacity-50">X-Axis</label>
-                <select
-                className="block w-full p-2.5 rounded-lg border-2 border-black bg-white focus:shadow-neo outline-none transition-all text-sm cursor-pointer font-bold"
-                value={xAxisKey}
-                onChange={(e) => setXAxisKey(e.target.value)}
-                >
-                {categoricalKeys.concat(numericKeys).map(k => (
-                    <option key={k} value={k}>{k}</option>
-                ))}
-                </select>
-            </div>
+              <div className="space-y-2">
+                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-md bg-primary/20 text-primary flex items-center justify-center text-[8px] font-black">X</span>
+                    Dimension (Categories)
+                  </label>
+                  <select
+                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
+                  value={xAxisKey}
+                  onChange={(e) => setXAxisKey(e.target.value)}
+                  >
+                  {categoricalKeys.concat(numericKeys).map(k => (
+                      <option key={k} value={k}>{k}</option>
+                  ))}
+                  </select>
+                  <p className="text-[9px] font-bold text-black/30 ml-1">Groups your data (e.g., Date, Region)</p>
+              </div>
 
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-black ml-1 uppercase opacity-50">Y-Axis</label>
-                <select
-                className="block w-full p-2.5 rounded-lg border-2 border-black bg-white focus:shadow-neo outline-none transition-all text-sm cursor-pointer font-bold"
-                value={yAxisKeys[0] || ""}
-                onChange={(e) => setYAxisKeys([e.target.value])}
-                >
-                {numericKeys.map(k => (
-                    <option key={k} value={k}>{k}</option>
-                ))}
-                </select>
-            </div>
-        </div>
+              <div className="space-y-2">
+                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-md bg-[#22c55e]/20 text-[#22c55e] flex items-center justify-center text-[8px] font-black">Y</span>
+                    Measure (Values)
+                  </label>
+                  <select
+                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
+                  value={yAxisKeys[0] || ""}
+                  onChange={(e) => setYAxisKeys([e.target.value])}
+                  >
+                  {numericKeys.map(k => (
+                      <option key={k} value={k}>{k}</option>
+                  ))}
+                  </select>
+                  <p className="text-[9px] font-bold text-black/30 ml-1">What to measure (e.g., Sales, Profit)</p>
+              </div>
+          </div>
         </div>
       )}
+
 
       {isStatic ? (
         <div 
