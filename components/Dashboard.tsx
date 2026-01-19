@@ -4,13 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LZString from "lz-string";
 import { jsPDF } from "jspdf";
-import { BarChart3, Table as TableIcon, RefreshCcw, Download, Image as ImageIcon, ImageDown, Trash2, X, Upload, FileText, AlertCircle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Link as LinkIcon, Mail, Copy, Check, LayoutDashboard, Clock, Sticker, Play, Radio } from "lucide-react";
+import { BarChart3, Table as TableIcon, RefreshCcw, Download, Image as ImageIcon, ImageDown, Trash2, X, Upload, FileText, AlertCircle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Link as LinkIcon, Mail, Copy, Check, LayoutDashboard, Clock, Sticker, Play } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { HistoryShelf } from "@/components/HistoryShelf";
 import { StickerPalette } from "@/components/StickerPalette";
 import { PresentationMode } from "@/components/PresentationMode";
-import { LiveShare } from "@/components/LiveShare";
 import { get, set } from "idb-keyval";
 import { toPng } from "html-to-image";
 import Papa from "papaparse";
@@ -39,12 +38,11 @@ export default function Dashboard() {
   const [annotations, setAnnotations] = useState<any[]>([]);
   
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copied, setCopied] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isStickersOpen, setIsStickersOpen] = useState(false);
   const [isPresentationModeOpen, setIsPresentationModeOpen] = useState(false);
-  const [isLiveShareOpen, setIsLiveShareOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const [copied, setCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   const activeData = transformedData || data;
@@ -149,14 +147,6 @@ export default function Dashboard() {
     setAnnotations(annotations.filter(a => a.instanceId !== id));
   };
 
-  const handleLiveData = (payload: any) => {
-    if (payload.type === 'SYNC_STATE' || payload.type === 'UPDATE_STATE') {
-        if (payload.data) setData(payload.data);
-        if (payload.fileName) setFileName(payload.fileName);
-        if (payload.annotations) setAnnotations(payload.annotations);
-    }
-  };
-
   const reset = () => {
       setData([]);
       setFileName("");
@@ -247,9 +237,6 @@ export default function Dashboard() {
   if (data.length === 0) {
     return (
       <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
-        {/* Navbar */}
-        <Navbar onHistoryClick={() => setIsHistoryOpen(true)} />
-
         <main className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Grid Accent */}
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
@@ -362,7 +349,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-6 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 bg-background" id="dashboard-container">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-background" id="dashboard-container">
       {/* Header */}
       <header className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b-2 border-[rgba(0,0,0,0.1)]">
         <div className="flex items-center gap-4">
@@ -407,13 +394,6 @@ export default function Dashboard() {
                 >
                     <Play className="w-5 h-5" />
                 </button>
-                <button 
-                    onClick={() => setIsLiveShareOpen(true)}
-                    className="p-2 bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"
-                    title="Live Share"
-                >
-                    <Radio className="w-5 h-5" />
-                </button>
             </div>
 
             <div className="w-[2px] h-8 bg-black/10 mx-1 hidden md:block" />
@@ -429,10 +409,10 @@ export default function Dashboard() {
                 </button>
                 <button 
                     onClick={handleDownloadAll}
-                    className="px-5 py-2.5 bg-white text-black border-2 border-black hover:translate-y-[-2px] rounded-xl shadow-neo font-black uppercase text-xs tracking-widest flex items-center gap-2 transition-all"
+                    className="px-3 md:px-5 py-2.5 bg-white text-black border-2 border-black hover:translate-y-[-2px] rounded-xl shadow-neo font-black uppercase text-xs tracking-widest flex items-center gap-2 transition-all"
                 >
                     <Download className="w-4 h-4" />
-                    EXPORT PDF
+                    <span className="hidden sm:inline">EXPORT PDF</span>
                 </button>
                 <button 
                     onClick={reset}
@@ -622,7 +602,6 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Hidden container for full report capture */}
       <div 
         id="full-report-capture" 
         style={{ 
@@ -635,84 +614,82 @@ export default function Dashboard() {
             backgroundColor: 'white', 
             padding: '40px',
             visibility: isExporting ? 'visible' : 'hidden',
+            display: isExporting ? 'block' : 'none', // Added display:none to prevent Recharts measurement attempts
             pointerEvents: 'none',
             opacity: isExporting ? 1 : 0
         }}
         className="space-y-8"
       >
-        <div className="flex items-center justify-between pb-8 border-b-2 border-[rgba(0,0,0,0.1)]">
-            <h1 className="text-4xl font-black">{fileName} - Analysis Report</h1>
-            <div className="flex items-center gap-2 text-[rgba(0,0,0,0.5)] font-bold">
-                 <span className="p-2 bg-primary text-white rounded-lg border-2 border-black">
-                    <LayoutDashboard className="w-6 h-6" />
-                 </span>
-                 Vizly Report
-            </div>
-        </div>
-        
-        <div className="space-y-4">
-             <h2 className="text-2xl font-bold flex items-center gap-2"><ArrowUpDown className="w-5 h-5" /> Key Insights</h2>
-             <InsightsPanel data={activeData} />
-        </div>
+        {isExporting && (
+            <>
+                <div className="flex items-center justify-between pb-8 border-b-2 border-[rgba(0,0,0,0.1)]">
+                    <h1 className="text-4xl font-black">{fileName} - Analysis Report</h1>
+                    <div className="flex items-center gap-2 text-[rgba(0,0,0,0.5)] font-bold">
+                        <span className="p-2 bg-primary text-white rounded-lg border-2 border-black">
+                            <LayoutDashboard className="w-6 h-6" />
+                        </span>
+                        BrutViz Report
+                    </div>
+                </div>
+                
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-bold flex items-center gap-2"><ArrowUpDown className="w-5 h-5" /> Key Insights</h2>
+                    <InsightsPanel data={activeData} />
+                </div>
 
-        <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
-             <h2 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Visualizations</h2>
-             
-             <div className="grid gap-12">
-                 <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-black border-l-4 border-primary pl-3">Bar Chart View</h3>
-                    <ChartGenerator data={activeData} isStatic={true} forcedChartType="bar" />
-                 </div>
-                 
-                 <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-black border-l-4 border-[#AF52DE] pl-3">Line Chart View</h3>
-                    <ChartGenerator data={activeData} isStatic={true} forcedChartType="line" />
-                 </div>
+                <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
+                    <h2 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Visualizations</h2>
+                    
+                    <div className="grid gap-12">
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-black border-l-4 border-primary pl-3">Bar Chart View</h3>
+                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="bar" />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-black border-l-4 border-[#AF52DE] pl-3">Line Chart View</h3>
+                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="line" />
+                        </div>
 
-                 <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-black border-l-4 border-[#007AFF] pl-3">Area Chart View</h3>
-                    <ChartGenerator data={activeData} isStatic={true} forcedChartType="area" />
-                 </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-black border-l-4 border-[#007AFF] pl-3">Area Chart View</h3>
+                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="area" />
+                        </div>
 
-                 <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-black border-l-4 border-[#FF2D55] pl-3">Distribution (Pie)</h3>
-                    <ChartGenerator data={activeData} isStatic={true} forcedChartType="pie" />
-                 </div>
-             </div>
-        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-black border-l-4 border-[#FF2D55] pl-3">Distribution (Pie)</h3>
+                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="pie" />
+                        </div>
+                    </div>
+                </div>
 
-        <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
-             <h2 className="text-2xl font-bold flex items-center gap-2"><TableIcon className="w-5 h-5" /> Data Table</h2>
-             <div className="border-2 border-black rounded-xl overflow-hidden p-4">
-                <DataTable data={activeData} showAll={true} />
-             </div>
-        </div>
+                <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
+                    <h2 className="text-2xl font-bold flex items-center gap-2"><TableIcon className="w-5 h-5" /> Data Table</h2>
+                    <div className="border-2 border-black rounded-xl overflow-hidden p-4">
+                        <DataTable data={activeData} showAll={true} />
+                    </div>
+                </div>
+            </>
+        )}
       </div>
 
-      <HistoryShelf 
-        isOpen={isHistoryOpen} 
-        onClose={() => setIsHistoryOpen(false)} 
+       <HistoryShelf
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
         onSelect={handleHistorySelect}
         currentDataId={currentDataId}
       />
 
-      <StickerPalette 
-        isOpen={isStickersOpen} 
-        onClose={() => setIsStickersOpen(false)} 
+      <StickerPalette
+        isOpen={isStickersOpen}
+        onClose={() => setIsStickersOpen(false)}
         onAddSticker={handleAddSticker}
       />
 
-      <PresentationMode 
-        data={activeData} 
-        isOpen={isPresentationModeOpen} 
-        onClose={() => setIsPresentationModeOpen(false)} 
-      />
-
-      <LiveShare 
-        isOpen={isLiveShareOpen} 
-        onClose={() => setIsLiveShareOpen(false)} 
-        onDataReceived={handleLiveData}
-        currentState={{ data, fileName, annotations }}
+      <PresentationMode
+        data={activeData}
+        isOpen={isPresentationModeOpen}
+        onClose={() => setIsPresentationModeOpen(false)}
       />
     </div>
   );

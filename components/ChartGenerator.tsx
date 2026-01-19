@@ -239,7 +239,7 @@ export default function ChartGenerator({ data, isStatic = false, forcedChartType
                 fullHeight ? "flex-1 min-h-0" : "h-[500px]"
             )}
         >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 {renderChart()}
             </ResponsiveContainer>
         </div>
@@ -254,7 +254,7 @@ export default function ChartGenerator({ data, isStatic = false, forcedChartType
                 fullHeight ? "flex-1 min-h-0" : "h-[500px]"
             )}
         >
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 {renderChart()}
             </ResponsiveContainer>
         </motion.div>

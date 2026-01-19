@@ -161,7 +161,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="w-[calc(100vw-32px)] sm:w-96 h-[500px] sm:h-[600px] bg-white border-4 border-black shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto"
+                    className="w-[calc(100vw-32px)] sm:w-[400px] h-[500px] sm:h-[600px] bg-white border-4 border-black shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto z-[1001]"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 bg-primary text-white border-b-4 border-black">
