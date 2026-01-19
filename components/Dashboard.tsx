@@ -405,10 +405,10 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-background relative overflow-hidden" id="dashboard-container">
       {/* Background Balls for Cohesion */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
-                {Array.from({ length: 40 }).map((_, i) => {
-                    const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]'];
-                    const size = Math.random() * 40 + 10;
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                {Array.from({ length: 50 }).map((_, i) => {
+                    const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]', 'bg-[#FFCC00]', 'bg-[#FF9500]'];
+                    const size = Math.random() * 50 + 15;
                     const color = colors[Math.floor(Math.random() * colors.length)];
                     const top = Math.random() * 100 + '%';
                     const left = Math.random() * 100 + '%';
@@ -421,7 +421,7 @@ export default function Dashboard() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ 
                                 scale: [0, 1.1, 1],
-                                opacity: [0, 0.15, 0.03],
+                                opacity: [0, 0.25, 0.08],
                                 y: [0, Math.random() * -100 - 50, 0],
                             }}
                             transition={{
@@ -429,7 +429,7 @@ export default function Dashboard() {
                                 opacity: { duration: 1, delay: delay },
                                 y: { duration: duration, repeat: Infinity, ease: "linear", delay: delay + 1 }
                             }}
-                            className={`absolute rounded-full border border-black/10 ${color}`}
+                            className={`absolute rounded-full border border-black/10 shadow-sm ${color}`}
                             style={{ 
                                 top, 
                                 left, 
