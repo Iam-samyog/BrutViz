@@ -85,24 +85,24 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                             type="text" 
                             value={tableName}
                             onChange={(e) => setTableName(e.target.value)}
-                            className="text-3xl font-black uppercase italic tracking-tighter bg-transparent border-b-4 border-black outline-none focus:border-primary transition-colors"
+                            className="text-xl sm:text-3xl font-black uppercase italic tracking-tighter bg-transparent border-b-4 border-black outline-none focus:border-primary transition-colors w-full max-w-[200px] sm:max-w-none"
                         />
                         <p className="text-[10px] font-black text-black/40 uppercase tracking-widest mt-1">Manual Table Creation Mode</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <button 
                         onClick={onCancel}
-                        className="px-6 py-3 bg-white border-4 border-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-50 active:translate-y-1 transition-all"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-3 sm:border-4 border-black rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-gray-50 active:translate-y-1 transition-all"
                     >
                         Cancel
                     </button>
                     <button 
                         onClick={handleConfirm}
-                        className="px-8 py-3 bg-primary text-white border-4 border-black rounded-2xl font-black uppercase tracking-widest text-xs shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
+                        className="px-4 sm:px-8 py-2 sm:py-3 bg-primary text-white border-3 sm:border-4 border-black rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-neo-sm sm:shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
                     >
-                        Analyze Table
+                        Analyze
                     </button>
                 </div>
             </div>
@@ -113,13 +113,13 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                         <thead>
                             <tr className="border-b-4 border-black bg-black/5">
                                 {headers.map((header, i) => (
-                                    <th key={i} className="p-4 border-r-4 border-black min-w-[200px]">
+                                <th key={i} className="p-2 sm:p-4 border-r-2 sm:border-r-4 border-black min-w-[120px] sm:min-w-[180px]">
                                         <div className="flex items-center gap-2 group">
                                             <input 
                                                 type="text" 
                                                 value={header}
                                                 onChange={(e) => updateHeader(i, e.target.value)}
-                                                className="flex-1 bg-transparent font-black uppercase italic outline-none focus:text-primary transition-colors text-sm"
+                                                className="flex-1 bg-transparent font-black uppercase italic outline-none focus:text-primary transition-colors text-xs sm:text-sm"
                                             />
                                             <button 
                                                 onClick={() => removeColumn(i)}
@@ -151,12 +151,12 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                                         className="border-b-4 border-black last:border-b-0 hover:bg-primary/5 transition-colors"
                                     >
                                         {headers.map((header, colIndex) => (
-                                            <td key={colIndex} className="p-2 border-r-4 border-black">
+                                        <td key={colIndex} className="p-1 sm:p-2 border-r-2 sm:border-r-4 border-black">
                                                 <input 
                                                     type="text" 
                                                     value={row[header]}
                                                     onChange={(e) => updateCell(rowIndex, header, e.target.value)}
-                                                    className="w-full p-3 font-bold text-sm bg-transparent outline-none focus:bg-white focus:shadow-neo-xs rounded-xl transition-all"
+                                                className="w-full p-2 sm:p-3 font-bold text-xs sm:text-sm bg-transparent outline-none focus:bg-white focus:shadow-neo-xs rounded-lg sm:rounded-xl transition-all"
                                                 />
                                             </td>
                                         ))}
@@ -178,7 +178,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                 <div className="p-8 flex justify-center border-t-4 border-black bg-black/5">
                     <button 
                         onClick={addRow}
-                        className="group flex items-center gap-3 px-10 py-4 bg-white border-4 border-black rounded-3xl font-black uppercase tracking-widest text-sm shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
+                        className="group flex items-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4 bg-white border-3 sm:border-4 border-black rounded-2xl sm:rounded-3xl font-black uppercase tracking-widest text-xs sm:text-sm shadow-neo-sm sm:shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
                     >
                         <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
                         Add New Row

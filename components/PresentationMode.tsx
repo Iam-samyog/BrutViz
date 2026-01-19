@@ -73,21 +73,21 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                 <div className="absolute bottom-[-100px] right-[-100px] w-80 h-80 bg-red-500/20 rounded-full blur-[120px] pointer-events-none" />
 
                 {/* Header Context */}
-                <div className="absolute top-8 left-8 flex items-center gap-4 z-50">
-                    <div className="p-3 bg-primary text-white border-4 border-white rounded-2xl shadow-neo-sm rotate-[-3deg]">
-                        <LayoutDashboard className="w-8 h-8" />
+                <div className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2 md:gap-4 z-50">
+                    <div className="p-2 md:p-3 bg-primary text-white border-2 md:border-4 border-white rounded-xl md:rounded-2xl shadow-neo-sm rotate-[-3deg]">
+                        <LayoutDashboard className="w-5 h-5 md:w-8 md:h-8" />
                     </div>
-                    <div>
-                        <h3 className="text-white text-2xl font-black tracking-tighter uppercase italic leading-none">BrutViz Live</h3>
-                        <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Presentation Mode</p>
+                    <div className="hidden sm:block">
+                        <h3 className="text-white text-lg md:text-2xl font-black tracking-tighter uppercase italic leading-none">BrutViz Live</h3>
+                        <p className="text-white/40 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]">Presentation Mode</p>
                     </div>
                 </div>
 
                 <button 
                     onClick={onClose}
-                    className="absolute top-8 right-8 p-4 bg-white border-4 border-black rounded-2xl shadow-neo hover:translate-y-[2px] hover:shadow-neo-sm transition-all z-50 group active:scale-95"
+                    className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-4 bg-white border-2 md:border-4 border-black rounded-xl md:rounded-2xl shadow-neo-sm md:shadow-neo hover:translate-y-[2px] transition-all z-50 group active:scale-95"
                 >
-                    <X className="w-8 h-8 group-hover:rotate-90 transition-transform" />
+                    <X className="w-5 h-5 md:w-8 md:h-8 group-hover:rotate-90 transition-transform" />
                 </button>
 
                 <div className="w-full h-full max-w-7xl flex flex-col relative z-10 px-4 py-4 md:px-20 md:py-8">
