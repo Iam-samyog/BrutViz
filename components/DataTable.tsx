@@ -91,7 +91,7 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
   if (data.length === 0) return null;
 
   return (
-    <div className="space-y-4 bg-black">
+    <div className="space-y-4 ">
       {!showAll && (
         <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
