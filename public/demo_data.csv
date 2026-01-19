@@ -1,0 +1,17 @@
+Date,Product,Category,Region,Sales,Profit,Units,Satisfaction
+2024-01-01,MacBook Pro 16,Electronics,North America,2499,800,5,4.8
+2024-01-03,ErgoChair Plus,Furniture,Europe,599,150,12,4.5
+2024-01-05,iPhone 15,Electronics,Asia,999,350,25,4.9
+2024-01-10,Standing Desk,Furniture,North America,850,200,8,4.2
+2024-01-15,AirPods Max,Electronics,Europe,549,150,40,4.7
+2024-01-20,Ultra Monitor 34,Electronics,Asia,1200,400,15,4.6
+2024-01-25,Coffee Machine,Appliances,Europe,299,80,30,4.3
+2024-02-01,Mechanical Keyboard,Electronics,North America,150,50,100,4.8
+2024-02-05,Designer Lamp,Furniture,Europe,120,40,60,4.1
+2024-02-10,Tablet Pro,Electronics,Asia,799,250,20,4.7
+2024-02-15,Smart Watch,Electronics,North America,399,120,80,4.5
+2024-02-20,Office Plant Pack,Decor,Europe,45,15,150,4.9
+2024-02-25,Bookshelf Unit,Furniture,Asia,350,100,10,4.0
+2024-03-01,Wireless Mouse,Electronics,North America,80,30,200,4.6
+2024-03-05,Gaming Headset,Electronics,Europe,130,45,110,4.4
+2024-03-10,Desk Mat,Decor,Asia,25,10,500,4.7
