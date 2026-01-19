@@ -403,7 +403,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-black relative overflow-hidden" id="dashboard-container">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-background relative overflow-hidden" id="dashboard-container">
       {/* Background Balls for Cohesion */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 {Array.from({ length: 50 }).map((_, i) => {
