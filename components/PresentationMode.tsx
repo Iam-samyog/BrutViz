@@ -18,6 +18,27 @@ const SLIDE_TYPES = ['bar', 'line', 'area', 'pie'];
 export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen, onClose }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState<{col: string, val: string} | null>(null);
+    const [customXAxis, setCustomXAxis] = useState<string>("");
+    const [customYAxis, setCustomYAxis] = useState<string>("");
+
+    const { numericKeys, categoricalKeys } = React.useMemo(() => {
+        if (!data.length) return { numericKeys: [], categoricalKeys: [] };
+        const firstRow = data[0];
+        const nKeys: string[] = [];
+        const cKeys: string[] = [];
+        Object.keys(firstRow).forEach((key) => {
+            const val = firstRow[key];
+            if (typeof val === "number" || (!isNaN(Number(val)) && val !== "")) nKeys.push(key);
+            else cKeys.push(key);
+        });
+        return { numericKeys: nKeys, categoricalKeys: cKeys };
+    }, [data]);
+
+    // Initialize defaults
+    React.useEffect(() => {
+        if (!customXAxis && categoricalKeys.length > 0) setCustomXAxis(categoricalKeys[0]);
+        if (!customYAxis && numericKeys.length > 0) setCustomYAxis(numericKeys[0]);
+    }, [categoricalKeys, numericKeys, customXAxis, customYAxis]);
 
     const categories = React.useMemo(() => getCategoryDistributions(data), [data]);
 
@@ -116,7 +137,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                     <div className="flex-1 flex flex-col items-center justify-center min-h-0 space-y-4 md:space-y-8">
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={`${currentSlide}-${selectedCategory?.val}`}
+                                key={`${currentSlide}-${selectedCategory?.val}-${customXAxis}-${customYAxis}`}
                                 initial={{ y: 20, opacity: 0, scale: 0.95 }}
                                 animate={{ y: 0, opacity: 1, scale: 1 }}
                                 exit={{ y: -20, opacity: 0, scale: 0.95 }}
@@ -129,18 +150,18 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                         animate={{ opacity: 1, y: 0 }}
                                         className="inline-block px-4 py-1 bg-primary/20 text-primary border-2 border-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-2"
                                     >
-                                        Dynamic {SLIDE_TYPES[currentSlide]} View
+                                        Comparing {customYAxis} by {customXAxis}
                                     </motion.div>
                                     <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
                                         {selectedCategory ? (
                                             <>
                                                 <span className="text-primary underline decoration-white/20">{selectedCategory.val}</span>
-                                                <span className="block text-xl sm:text-3xl mt-4 text-white/40 font-bold normal-case tracking-normal opacity-60">Deep Dive Analysis</span>
+                                                <span className="block text-xl sm:text-3xl mt-4 text-white/40 font-bold normal-case tracking-normal opacity-60">Analysis of {customYAxis}</span>
                                             </>
                                         ) : (
                                             <>
                                                 {SLIDE_TYPES[currentSlide]} 
-                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Global Analysis</span>
+                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Global {customYAxis}</span>
                                             </>
                                         )}
                                     </h2>
@@ -151,6 +172,8 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                         data={filteredData} 
                                         isStatic={true} 
                                         forcedChartType={SLIDE_TYPES[currentSlide] as any} 
+                                        forcedXAxis={customXAxis}
+                                        forcedYAxis={customYAxis}
                                         hideConfig={true}
                                         fullHeight={true}
                                     />
@@ -159,33 +182,67 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                         </AnimatePresence>
                     </div>
 
-                    <div className="flex items-center justify-between mt-6 md:mt-8 max-w-2xl mx-auto w-full gap-4">
-                        <button 
-                            onClick={prevSlide}
-                            className="p-3 md:p-5 bg-white border-2 md:border-4 border-black rounded-xl md:rounded-2xl shadow-neo-sm md:shadow-neo hover:translate-y-[2px] transition-all active:scale-90 flex-shrink-0"
-                        >
-                            <ChevronLeft className="w-6 h-6 md:w-10 md:h-10" />
-                        </button>
+                    <div className="flex flex-col md:flex-row items-center justify-between mt-6 md:mt-8 max-w-5xl mx-auto w-full gap-6">
+                        {/* Navigation Controls */}
+                        <div className="flex items-center gap-4">
+                            <button 
+                                onClick={prevSlide}
+                                className="p-4 bg-white border-4 border-black rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
+                            >
+                                <ChevronLeft className="w-8 h-8" />
+                            </button>
 
-                        <div className="flex gap-2 md:gap-3 px-3 py-2 md:px-6 md:py-4 bg-white border-2 md:border-4 border-black rounded-2xl md:rounded-3xl shadow-neo-sm overflow-x-auto no-scrollbar">
-                            {SLIDE_TYPES.map((_, i) => (
-                                <button 
-                                    key={i}
-                                    onClick={() => setCurrentSlide(i)}
-                                    className={cn(
-                                        "h-2 md:h-3 rounded-full transition-all duration-300 border-[1px] md:border-2 border-black flex-shrink-0",
-                                        currentSlide === i ? "w-8 md:w-12 bg-primary" : "w-2 md:w-3 bg-black/10 hover:bg-black/20"
-                                    )}
-                                />
-                            ))}
+                            <div className="flex gap-2 p-3 bg-white border-4 border-black rounded-2xl shadow-neo min-w-[120px] justify-center">
+                                {SLIDE_TYPES.map((_, i) => (
+                                    <button 
+                                        key={i}
+                                        onClick={() => setCurrentSlide(i)}
+                                        className={cn(
+                                            "h-3 rounded-full transition-all duration-300 border-2 border-black",
+                                            currentSlide === i ? "w-10 bg-primary" : "w-3 bg-black/10 hover:bg-black/20"
+                                        )}
+                                    />
+                                ))}
+                            </div>
+
+                            <button 
+                                onClick={nextSlide}
+                                className="p-4 bg-white border-4 border-black rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
+                            >
+                                <ChevronRight className="w-8 h-8" />
+                            </button>
                         </div>
 
-                        <button 
-                            onClick={nextSlide}
-                            className="p-3 md:p-5 bg-white border-2 md:border-4 border-black rounded-xl md:rounded-2xl shadow-neo-sm md:shadow-neo hover:translate-y-[2px] transition-all active:scale-90 flex-shrink-0"
-                        >
-                            <ChevronRight className="w-6 h-6 md:w-10 md:h-10" />
-                        </button>
+                        {/* Axis Controls */}
+                        <div className="flex flex-wrap items-center gap-4 p-4 bg-black/40 backdrop-blur-md border-2 border-white/20 rounded-[2rem]">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Dimension (X)</span>
+                                <select 
+                                    value={customXAxis}
+                                    onChange={(e) => setCustomXAxis(e.target.value)}
+                                    className="bg-white border-2 border-black rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
+                                >
+                                    {categoricalKeys.concat(numericKeys).map(k => (
+                                        <option key={k} value={k}>{k}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="w-[1px] h-6 bg-white/10" />
+
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Measure (Y)</span>
+                                <select 
+                                    value={customYAxis}
+                                    onChange={(e) => setCustomYAxis(e.target.value)}
+                                    className="bg-white border-2 border-black rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
+                                >
+                                    {numericKeys.map(k => (
+                                        <option key={k} value={k}>{k}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

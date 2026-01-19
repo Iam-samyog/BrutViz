@@ -26,6 +26,8 @@ interface ChartGeneratorProps {
   data: any[];
   isStatic?: boolean;
   forcedChartType?: "bar" | "line" | "area" | "pie";
+  forcedXAxis?: string;
+  forcedYAxis?: string;
   hideConfig?: boolean;
   fullHeight?: boolean;
 }
@@ -40,12 +42,23 @@ const COLORS = [
   "#FF9500", // Apple Orange
 ];
 
-export default function ChartGenerator({ data, isStatic = false, forcedChartType, hideConfig = false, fullHeight = false }: ChartGeneratorProps) {
+export default function ChartGenerator({ 
+  data, 
+  isStatic = false, 
+  forcedChartType, 
+  forcedXAxis,
+  forcedYAxis,
+  hideConfig = false, 
+  fullHeight = false 
+}: ChartGeneratorProps) {
   const [chartTypeState, setChartType] = useState<"bar" | "line" | "area" | "pie">("bar");
   const chartType = forcedChartType || chartTypeState; // Override if forced
 
-  const [xAxisKey, setXAxisKey] = useState<string>("");
-  const [yAxisKeys, setYAxisKeys] = useState<string[]>([]); // simplified to one for now or multiple
+  const [xAxisKeyOverride, setXAxisKey] = useState<string>("");
+  const [yAxisKeysOverride, setYAxisKeys] = useState<string[]>([]);
+
+  const xAxisKey = forcedXAxis || xAxisKeyOverride;
+  const yAxisKeys = forcedYAxis ? [forcedYAxis] : yAxisKeysOverride;
 
   // Analyze data to find potential axes
   const { numericKeys, categoricalKeys } = useMemo(() => {
