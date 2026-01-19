@@ -55,9 +55,9 @@ export default function InsightsPanel({ data }: { data: any[] }) {
             <div className="space-y-2 flex-1">
               <div className="flex items-center justify-between">
                 <h4 className="font-black text-xs uppercase tracking-[0.15em] text-black/40">{insight.title}</h4>
-                {insight.score && (
-                    <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-black text-white border-2 border-black">
-                        {Math.round(insight.score * 100)}%
+                {insight.score && insight.score >= 7 && (
+                    <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-primary text-white">
+                        ⭐ Key
                     </span>
                 )}
               </div>
