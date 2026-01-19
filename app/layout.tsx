@@ -8,12 +8,17 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "BrutViz | Instant Data Visualization & Analysis",
   description: "Transform your CSV, JSON, and Excel files into professional insights instantly. Zero server, 100% private, Neo-Brutalist data analysis.",
-  keywords: ["data visualization", "data analysis", "spreadsheet chart", "CSV to chart", "Neo-Brutalist design", "serverless dashoard"],
+  keywords: ["data visualization", "data analysis", "spreadsheet chart", "CSV to chart", "Neo-Brutalist design", "serverless dashboard"],
   authors: [{ name: "BrutViz Team" }],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({

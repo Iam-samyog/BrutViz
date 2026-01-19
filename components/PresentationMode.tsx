@@ -48,7 +48,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                         <LayoutDashboard className="w-8 h-8" />
                     </div>
                     <div>
-                        <h3 className="text-white text-2xl font-black tracking-tighter uppercase italic leading-none">Vizly Live</h3>
+                        <h3 className="text-white text-2xl font-black tracking-tighter uppercase italic leading-none">BrutViz Live</h3>
                         <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">Presentation Mode</p>
                     </div>
                 </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageSquare, Send, Bot, Loader2, KeyRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getDetailedStats, getCategoryDistributions } from "@/lib/insights";
 
 interface ChatInterfaceProps {
   data: any[];
@@ -27,14 +28,14 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
   // Load API Key from local storage on mount
   useState(() => {
     if (typeof window !== "undefined") {
-        const storedKey = localStorage.getItem("vizly_gemini_key");
+        const storedKey = localStorage.getItem("brutviz_gemini_key");
         if (storedKey) setApiKey(storedKey); 
     }
   });
 
   const handleSaveKey = (key: string) => {
       setApiKey(key);
-      localStorage.setItem("vizly_gemini_key", key);
+      localStorage.setItem("brutviz_gemini_key", key);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,15 +49,52 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
     setIsLoading(true);
 
     try {
+        const stats = getDetailedStats(data);
+        const categoricalDist = getCategoryDistributions(data);
         const headers = Object.keys(data[0] || {}).join(", ");
         const sample = JSON.stringify(data.slice(0, 3));
-        const context = `Dataset Columns: ${headers}\nSample Data: ${sample}\nTotal Rows: ${data.length}`;
         
-        const systemPrompt = `You are OriData, an advanced data analyst.
-        Context: ${context}
+        const statsContext = stats.map(s => 
+            `${s.column}: Mean=${s.mean.toFixed(2)}, Max=${s.max} (Record: ${JSON.stringify(s.maxRow)}), Min=${s.min} (Record: ${JSON.stringify(s.minRow)})`
+        ).join("\n");
+
+        const categoryContext = categoricalDist.map(c => 
+            `${c.column}: Top Values = ${c.topValues.map(v => `${v.value} (${v.count})`).join(", ")}`
+        ).join("\n");
+
+        const systemPrompt = `You are BrutViz AI, a world-class senior data scientist.
         
-        Answer the user's question concisely based on the data context provided.
-        If the user asks for a chart, reply with JSON starting with "CHART_CONFIG:" followed by the JSON object.
+        DATASET OVERVIEW:
+        - Columns: ${headers}
+        - Total Rows: ${data.length}
+        
+        GLOBAL STATISTICAL TRUTH (Outlier Identities):
+        ${statsContext}
+
+        CATEGORICAL DISTRIBUTIONS:
+        ${categoryContext}
+
+        SAMPLE DATA (First 3 rows for structure):
+        ${sample}
+
+        YOUR MISSION:
+        1. Professional Analysis: Use the GLOBAL STATISTICAL TRUTH to identify the absolute highest/lowest values. Never guess based on the sample data.
+        2. Insight Extraction: Compare dimensions (e.g., "The highest sale was $3,500 for a Conference Table, which is 5x the average").
+        3. Automated Charting: If the user asks to "analyze", "visualize", "show", or "compare", you MUST return a config.
+        
+        CHARTING RULES:
+        - Output format: CHART_CONFIG: followed by the JSON object.
+        - Supported types: "bar", "line", "area", "pie".
+        - Always use xKey and yKeys from the provided Columns.
+
+        FEW-SHOT EXAMPLE:
+        User: "Who is the top performer?"
+        Response: "Based on the global data, **John Doe** leads with 45 sales. CHART_CONFIG:{"type":"bar","xKey":"Name","yKeys":["Sales"],"title":"Top Performers"}"
+
+        INSTRUCTIONS:
+        - Use bold text for key metrics.
+        - Be concise but mathematically accurate.
+        - Explain the "Why" behind the numbers using the categorical distributions.
         `;
 
         const apiHistory = newHistory
@@ -85,7 +123,27 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
             throw new Error(json.error.message);
         }
 
-        const reply = json.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
+        let reply = json.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
+        
+        // Handle Chart Config
+        if (reply.includes("CHART_CONFIG:")) {
+            const parts = reply.split("CHART_CONFIG:");
+            const textPart = parts[0].trim();
+            const rawConfig = parts[1].trim();
+            // Extract JSON even if wrapped in markdown code blocks or trailing text
+            const jsonPart = rawConfig.replace(/```json|```/g, "").trim();
+            const jsonMatch = jsonPart.match(/\{[\s\S]*\}/);
+            const cleanJson = jsonMatch ? jsonMatch[0] : jsonPart;
+            
+            try {
+                const config = JSON.parse(cleanJson);
+                if (onChartConfig) onChartConfig(config);
+                reply = textPart || "I've generated a new visualization for you!";
+            } catch (e) {
+                console.error("BrutViz AI: Failed to parse chart config", e, "Raw data:", cleanJson);
+            }
+        }
+
         setMessages(prev => [...prev, { role: "assistant", content: reply }]);
 
     } catch (err: any) {
@@ -109,7 +167,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
                     <div className="flex items-center justify-between p-4 bg-primary text-white border-b-4 border-black">
                         <div className="flex items-center gap-2">
                             <Bot className="w-5 h-5" />
-                            <h3 className="font-bold">OriData AI</h3>
+                            <h3 className="font-bold">BrutViz AI</h3>
                         </div>
                         <button 
                             onClick={() => setIsOpen(false)}
@@ -143,10 +201,15 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
                                             </div>
                                         )}
                                         <div className={cn(
-                                            "max-w-[80%] p-3 text-sm font-bold rounded-xl border-2 border-black shadow-neo-sm",
+                                            "max-w-[80%] p-3 text-sm font-bold rounded-xl border-2 border-black shadow-neo-sm whitespace-pre-wrap",
                                             m.role === "user" ? "bg-black text-white" : "bg-white text-black"
                                         )}>
-                                            {m.content}
+                                            {m.role === "assistant" ? m.content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                                                if (part.startsWith("**") && part.endsWith("**")) {
+                                                    return <strong key={i} className="font-black underline decoration-primary/30 decoration-2 underline-offset-2">{part.slice(2, -2)}</strong>;
+                                                }
+                                                return part;
+                                            }) : m.content}
                                         </div>
                                     </div>
                                 ))}

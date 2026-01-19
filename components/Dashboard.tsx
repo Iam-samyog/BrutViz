@@ -24,9 +24,9 @@ import ChatInterface from "@/components/ChatInterface";
 import { cn } from "@/lib/utils";
 
 // Define storage keys
-const STORAGE_KEY_DATA = "vizly_v2_data";
-const STORAGE_KEY_NAME = "vizly_v2_filename";
-const HISTORY_KEY = 'vizly_history';
+const STORAGE_KEY_DATA = "brutviz_v2_data";
+const STORAGE_KEY_NAME = "brutviz_v2_filename";
+const HISTORY_KEY = 'brutviz_history';
 
 export default function Dashboard() {
   const [data, setData] = useState<any[]>([]);
@@ -371,13 +371,11 @@ export default function Dashboard() {
             </div>
             <div className="min-w-0">
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight text-black truncate max-w-[200px] md:max-w-none" title={fileName}>{fileName}</h1>
-                <p className="text-sm font-bold text-[rgba(0,0,0,0.5)] flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#22c55e] border border-black animate-pulse"></span>
-                    <span className="truncate">{activeData.length} rows active</span>
-                    {transformedData && (
+                {transformedData && (
+                    <p className="text-sm font-bold text-[rgba(0,0,0,0.5)] flex items-center gap-2">
                         <span className="text-[10px] md:text-xs bg-black text-white px-2 py-0.5 rounded-full whitespace-nowrap">Transformed</span>
-                    )}
-                </p>
+                    </p>
+                )}
             </div>
         </div>
 

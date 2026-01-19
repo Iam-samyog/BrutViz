@@ -15,7 +15,7 @@ interface HistoryItem {
     data: any[];
 }
 
-const HISTORY_KEY = 'vizly_history';
+const HISTORY_KEY = 'brutviz_history';
 
 interface HistoryShelfProps {
     isOpen: boolean;
