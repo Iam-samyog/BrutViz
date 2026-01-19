@@ -135,25 +135,41 @@ export default function ChartGenerator({ data, isStatic = false, forcedChartType
           </LineChart>
         );
       case "pie":
+        // Group data for Pie charts to avoid clutter
+        const aggregatedData = (() => {
+            if (chartData.length <= 8) return chartData;
+            const sorted = [...chartData].sort((a, b) => (b[yAxisKeys[0]] || 0) - (a[yAxisKeys[0]] || 0));
+            const top = sorted.slice(0, 8);
+            const rest = sorted.slice(8);
+            const otherValue = rest.reduce((sum, item) => sum + (Number(item[yAxisKeys[0]]) || 0), 0);
+            
+            return [
+                ...top,
+                { [xAxisKey]: "Others", [yAxisKeys[0]]: otherValue }
+            ];
+        })();
+
         return (
           <PieChart>
              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+                contentStyle={{ borderRadius: '12px', border: '2px solid black', boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)', fontWeight: 'bold' }} 
              />
-             <Legend wrapperStyle={{ paddingTop: '20px' }} />
+             <Legend verticalAlign="bottom" height={36} />
              <Pie
-               data={chartData}
+               data={aggregatedData}
                dataKey={yAxisKeys[0]}
                nameKey={xAxisKey}
                cx="50%"
                cy="50%"
+               innerRadius={60}
                outerRadius={100}
+               paddingAngle={2}
                fill="#8884d8"
-               label
+               label={({ name, percent }) => (percent !== undefined && percent > 0.05) ? `${name} (${(percent * 100).toFixed(0)}%)` : ''}
                isAnimationActive={!isStatic}
              >
-               {chartData.map((entry, index) => (
-                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+               {aggregatedData.map((entry, index) => (
+                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="black" strokeWidth={1} />
                ))}
              </Pie>
           </PieChart>
