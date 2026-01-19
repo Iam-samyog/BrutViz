@@ -246,38 +246,39 @@ export default function Dashboard() {
                  style={{ backgroundImage: 'radial-gradient(circle, black 1px, transparent 1px)', backgroundSize: '32px 32px' }} 
             />
 
-            {/* Dynamic Animated Background (70+ Balls) */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 ">
+            {/* Dynamic Animated Background (70+ Balls with Popping Entry) */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                 {Array.from({ length: 70 }).map((_, i) => {
                     const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]'];
-                    const size = Math.random() * 60 + 20; // 20px to 80px
+                    const size = Math.random() * 60 + 20;
                     const color = colors[Math.floor(Math.random() * colors.length)];
                     const top = Math.random() * 100 + '%';
                     const left = Math.random() * 100 + '%';
-                    const delay = Math.random() * 5;
+                    const delay = Math.random() * 2;
                     const duration = Math.random() * 6 + 4;
 
                     return (
                         <motion.div
                             key={i}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ 
+                                scale: [0, 1.2, 1, 1.1, 1],
+                                opacity: [0, 0.2, 0.05, 0.15, 0.05],
+                                y: [0, Math.random() * -50 - 20, 0],
+                                x: [0, Math.random() * 20 - 10, 0]
+                            }}
+                            transition={{
+                                scale: { duration: 0.8, delay: delay },
+                                opacity: { duration: 0.8, delay: delay },
+                                y: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.8 },
+                                x: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.8 }
+                            }}
                             className={`absolute rounded-full border-2 border-black shadow-neo-sm ${color}`}
                             style={{ 
                                 top, 
                                 left, 
                                 width: size, 
                                 height: size 
-                            }}
-                            animate={{ 
-                                scale: [1, 1.2, 1],
-                                opacity: [0.05, 0.25, 0.05],
-                                y: [0, Math.random() * -50 - 20, 0],
-                                x: [0, Math.random() * 20 - 10, 0]
-                            }}
-                            transition={{
-                                duration: duration,
-                                repeat: Infinity,
-                                delay: delay,
-                                ease: "easeInOut"
                             }}
                         />
                     );
@@ -375,7 +376,45 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-background" id="dashboard-container">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 bg-background relative overflow-hidden" id="dashboard-container">
+      {/* Background Balls for Cohesion */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-40">
+                {Array.from({ length: 40 }).map((_, i) => {
+                    const colors = ['bg-primary', 'bg-[#FF2D55]', 'bg-[#AF52DE]', 'bg-[#22c55e]'];
+                    const size = Math.random() * 40 + 10;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const top = Math.random() * 100 + '%';
+                    const left = Math.random() * 100 + '%';
+                    const delay = Math.random() * 2;
+                    const duration = Math.random() * 10 + 5;
+
+                    return (
+                        <motion.div
+                            key={i}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ 
+                                scale: [0, 1.1, 1],
+                                opacity: [0, 0.15, 0.03],
+                                y: [0, Math.random() * -100 - 50, 0],
+                            }}
+                            transition={{
+                                scale: { duration: 1, delay: delay },
+                                opacity: { duration: 1, delay: delay },
+                                y: { duration: duration, repeat: Infinity, ease: "linear", delay: delay + 1 }
+                            }}
+                            className={`absolute rounded-full border border-black/10 ${color}`}
+                            style={{ 
+                                top, 
+                                left, 
+                                width: size, 
+                                height: size 
+                            }}
+                        />
+                    );
+                })}
+      </div>
+
+      <div className="relative z-10 space-y-6 md:space-y-8">
       {/* Header */}
       <header className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b-2 border-[rgba(0,0,0,0.1)]">
         <div className="flex items-center gap-4">
@@ -717,6 +756,26 @@ export default function Dashboard() {
         isOpen={isPresentationModeOpen}
         onClose={() => setIsPresentationModeOpen(false)}
       />
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+          className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
+        ></motion.div>
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5, ease: "easeOut" }}
+          className="absolute -top-20 -right-20 w-64 h-64 bg-secondary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"
+        ></motion.div>
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5, ease: "easeOut" }}
+          className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-tertiary rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"
+        ></motion.div>
+      </div>
     </div>
   );
 }
