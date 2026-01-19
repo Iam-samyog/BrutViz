@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X, Play, Maximize2, Sparkles, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ChartGenerator from './ChartGenerator';
+import { getCategoryDistributions } from '@/lib/insights';
 
 interface PresentationModeProps {
     data: any[];
@@ -16,6 +17,14 @@ const SLIDE_TYPES = ['bar', 'line', 'area', 'pie'];
 
 export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen, onClose }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [selectedCategory, setSelectedCategory] = useState<{col: string, val: string} | null>(null);
+
+    const categories = React.useMemo(() => getCategoryDistributions(data), [data]);
+
+    const filteredData = React.useMemo(() => {
+        if (!selectedCategory) return data;
+        return data.filter(row => String(row[selectedCategory.col]) === selectedCategory.val);
+    }, [data, selectedCategory]);
 
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % SLIDE_TYPES.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + SLIDE_TYPES.length) % SLIDE_TYPES.length);
@@ -61,10 +70,37 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                 </button>
 
                 <div className="w-full h-full max-w-7xl flex flex-col relative z-10 px-4 py-4 md:px-20 md:py-8">
+                    {/* Category Selector Toolbar */}
+                    {categories.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                            <button 
+                                onClick={() => setSelectedCategory(null)}
+                                className={cn(
+                                    "px-4 py-2 rounded-xl border-2 border-white font-bold text-xs transition-all",
+                                    !selectedCategory ? "bg-white text-black" : "bg-transparent text-white/50 hover:text-white"
+                                )}
+                            >
+                                ALL DATA
+                            </button>
+                            {categories[0].topValues.map((v, i) => (
+                                <button 
+                                    key={i}
+                                    onClick={() => setSelectedCategory({ col: categories[0].column, val: v.value })}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl border-2 border-white font-bold text-xs transition-all uppercase",
+                                        selectedCategory?.val === v.value ? "bg-primary text-white border-primary" : "bg-transparent text-white/50 hover:text-white"
+                                    )}
+                                >
+                                    {v.value}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     <div className="flex-1 flex flex-col items-center justify-center min-h-0 space-y-4 md:space-y-8">
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={currentSlide}
+                                key={`${currentSlide}-${selectedCategory?.val}`}
                                 initial={{ y: 20, opacity: 0, scale: 0.95 }}
                                 animate={{ y: 0, opacity: 1, scale: 1 }}
                                 exit={{ y: -20, opacity: 0, scale: 0.95 }}
@@ -73,14 +109,23 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                             >
                                 <div className="text-center space-y-2 mb-4">
                                     <h2 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
-                                        {SLIDE_TYPES[currentSlide]} 
-                                        <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Analysis</span>
+                                        {selectedCategory ? (
+                                            <>
+                                                <span className="text-primary">{selectedCategory.val}</span>
+                                                <span className="block text-2xl sm:text-4xl mt-2 text-white/40">{SLIDE_TYPES[currentSlide]} Analysis</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {SLIDE_TYPES[currentSlide]} 
+                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Analysis</span>
+                                            </>
+                                        )}
                                     </h2>
                                 </div>
-
+ 
                                 <div className="w-full flex-1 bg-white border-4 md:border-[8px] border-black rounded-2xl md:rounded-[2.5rem] shadow-[10px_10px_0px_0px_#22c55e] md:shadow-[20px_20px_0px_0px_#22c55e] p-3 md:p-8 min-h-0 overflow-hidden relative group">
                                     <ChartGenerator 
-                                        data={data} 
+                                        data={filteredData} 
                                         isStatic={true} 
                                         forcedChartType={SLIDE_TYPES[currentSlide] as any} 
                                         hideConfig={true}
