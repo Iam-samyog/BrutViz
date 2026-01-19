@@ -2,18 +2,39 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sticker, Info, AlertTriangle, CheckCircle2, Star, ArrowUpRight, TrendingUp, Zap } from 'lucide-react';
+import { X, Sticker, Info, AlertTriangle, CheckCircle2, Star, ArrowUpRight, TrendingUp, Zap, Heart, ThumbsUp, ThumbsDown, Target, Flame, Trophy, Crown, Sparkles, Rocket, Eye, Lightbulb, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const STICKERS = [
+    // Text Stickers
     { id: 'look', type: 'text', content: 'LOOK HERE!', color: 'bg-yellow-300', rotate: -5 },
     { id: 'danger', type: 'text', content: 'DANGER!', color: 'bg-red-500 text-white', rotate: 3 },
     { id: 'cool', type: 'text', content: 'COOL DATA', color: 'bg-primary text-white', rotate: -2 },
     { id: 'growth', type: 'text', content: 'GROWTH!', color: 'bg-green-500 text-white', rotate: 5 },
+    { id: 'wow', type: 'text', content: 'WOW!', color: 'bg-purple-500 text-white', rotate: -8 },
+    { id: 'hot', type: 'text', content: '🔥 HOT!', color: 'bg-orange-500 text-white', rotate: 6 },
+    { id: 'new', type: 'text', content: 'NEW!', color: 'bg-pink-500 text-white', rotate: -4 },
+    { id: 'important', type: 'text', content: 'IMPORTANT', color: 'bg-black text-white', rotate: 2 },
+    { id: 'key_insight', type: 'text', content: '🔑 KEY', color: 'bg-amber-400', rotate: -3 },
+    { id: 'question', type: 'text', content: '❓ WHY?', color: 'bg-blue-300', rotate: 7 },
+    // Icon Stickers
     { id: 'star_stick', type: 'icon', content: <Star className="w-8 h-8"/>, color: 'bg-yellow-400', rotate: 10 },
     { id: 'zap_stick', type: 'icon', content: <Zap className="w-8 h-8"/>, color: 'bg-blue-400', rotate: -10 },
     { id: 'trending_stick', type: 'icon', content: <TrendingUp className="w-8 h-8"/>, color: 'bg-green-400', rotate: 0 },
     { id: 'alert_stick', type: 'icon', content: <AlertTriangle className="w-8 h-8"/>, color: 'bg-red-400', rotate: 15 },
+    { id: 'heart_stick', type: 'icon', content: <Heart className="w-8 h-8"/>, color: 'bg-pink-400', rotate: -12 },
+    { id: 'thumbsup_stick', type: 'icon', content: <ThumbsUp className="w-8 h-8"/>, color: 'bg-green-300', rotate: 8 },
+    { id: 'thumbsdown_stick', type: 'icon', content: <ThumbsDown className="w-8 h-8"/>, color: 'bg-red-300', rotate: -8 },
+    { id: 'target_stick', type: 'icon', content: <Target className="w-8 h-8"/>, color: 'bg-indigo-400', rotate: 5 },
+    { id: 'flame_stick', type: 'icon', content: <Flame className="w-8 h-8"/>, color: 'bg-orange-400', rotate: -5 },
+    { id: 'trophy_stick', type: 'icon', content: <Trophy className="w-8 h-8"/>, color: 'bg-amber-500', rotate: 0 },
+    { id: 'crown_stick', type: 'icon', content: <Crown className="w-8 h-8"/>, color: 'bg-yellow-500', rotate: -7 },
+    { id: 'sparkles_stick', type: 'icon', content: <Sparkles className="w-8 h-8"/>, color: 'bg-purple-300', rotate: 12 },
+    { id: 'rocket_stick', type: 'icon', content: <Rocket className="w-8 h-8"/>, color: 'bg-cyan-400', rotate: -15 },
+    { id: 'eye_stick', type: 'icon', content: <Eye className="w-8 h-8"/>, color: 'bg-gray-400', rotate: 3 },
+    { id: 'lightbulb_stick', type: 'icon', content: <Lightbulb className="w-8 h-8"/>, color: 'bg-yellow-200', rotate: -6 },
+    { id: 'flag_stick', type: 'icon', content: <Flag className="w-8 h-8"/>, color: 'bg-red-500 text-white', rotate: 10 },
+    { id: 'check_stick', type: 'icon', content: <CheckCircle2 className="w-8 h-8"/>, color: 'bg-green-500 text-white', rotate: -10 },
 ];
 
 interface StickerPaletteProps {
