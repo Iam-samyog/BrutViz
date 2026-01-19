@@ -71,31 +71,47 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
                 <div className="w-full h-full max-w-7xl flex flex-col relative z-10 px-4 py-4 md:px-20 md:py-8">
                     {/* Category Selector Toolbar */}
-                    {categories.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-                            <button 
-                                onClick={() => setSelectedCategory(null)}
-                                className={cn(
-                                    "px-4 py-2 rounded-xl border-2 border-white font-bold text-xs transition-all",
-                                    !selectedCategory ? "bg-white text-black" : "bg-transparent text-white/50 hover:text-white"
-                                )}
-                            >
-                                ALL DATA
-                            </button>
-                            {categories[0].topValues.map((v, i) => (
+                    <div className="flex flex-col items-center gap-4 mb-10">
+                        {categories.length > 0 ? (
+                            <div className="flex flex-wrap items-center justify-center gap-3">
                                 <button 
-                                    key={i}
-                                    onClick={() => setSelectedCategory({ col: categories[0].column, val: v.value })}
+                                    onClick={() => setSelectedCategory(null)}
                                     className={cn(
-                                        "px-4 py-2 rounded-xl border-2 border-white font-bold text-xs transition-all uppercase",
-                                        selectedCategory?.val === v.value ? "bg-primary text-white border-primary" : "bg-transparent text-white/50 hover:text-white"
+                                        "px-6 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95",
+                                        !selectedCategory 
+                                            ? "bg-white text-black border-white shadow-[4px_4px_0px_0px_#22c55e]" 
+                                            : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"
                                     )}
                                 >
-                                    {v.value}
+                                    🌍 VIEW ALL DATA
                                 </button>
-                            ))}
-                        </div>
-                    )}
+                                
+                                {categories.slice(0, 2).map((cat) => (
+                                    <React.Fragment key={cat.column}>
+                                        <div className="h-8 w-[2px] bg-white/10 hidden md:block mx-2" />
+                                        {cat.topValues.map((v, i) => (
+                                            <button 
+                                                key={`${cat.column}-${i}`}
+                                                onClick={() => setSelectedCategory({ col: cat.column, val: v.value })}
+                                                className={cn(
+                                                    "px-6 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 uppercase",
+                                                    selectedCategory?.val === v.value 
+                                                        ? "bg-primary text-white border-primary shadow-[4px_4px_0px_0px_#ffffff]" 
+                                                        : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"
+                                                )}
+                                            >
+                                                {v.value}
+                                            </button>
+                                        ))}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-white/5 border-2 border-dashed border-white/20 px-8 py-4 rounded-3xl">
+                                <p className="text-white/30 font-bold text-sm tracking-widest uppercase">No categorical filters available for this segment</p>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="flex-1 flex flex-col items-center justify-center min-h-0 space-y-4 md:space-y-8">
                         <AnimatePresence mode="wait">
@@ -107,17 +123,24 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                 transition={{ type: 'spring', damping: 25, stiffness: 120 }}
                                 className="w-full h-full flex flex-col items-center justify-center min-h-0"
                             >
-                                <div className="text-center space-y-2 mb-4">
-                                    <h2 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
+                                <div className="text-center space-y-4 mb-8">
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="inline-block px-4 py-1 bg-primary/20 text-primary border-2 border-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-2"
+                                    >
+                                        Dynamic {SLIDE_TYPES[currentSlide]} View
+                                    </motion.div>
+                                    <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
                                         {selectedCategory ? (
                                             <>
-                                                <span className="text-primary">{selectedCategory.val}</span>
-                                                <span className="block text-2xl sm:text-4xl mt-2 text-white/40">{SLIDE_TYPES[currentSlide]} Analysis</span>
+                                                <span className="text-primary underline decoration-white/20">{selectedCategory.val}</span>
+                                                <span className="block text-xl sm:text-3xl mt-4 text-white/40 font-bold normal-case tracking-normal opacity-60">Deep Dive Analysis</span>
                                             </>
                                         ) : (
                                             <>
                                                 {SLIDE_TYPES[currentSlide]} 
-                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Analysis</span>
+                                                <span className="pl-2 sm:pl-4 text-primary italic underline decoration-[4px] sm:decoration-[8px] md:decoration-[12px] decoration-white underline-offset-[4px] sm:underline-offset-[8px] md:underline-offset-[12px]">Global Analysis</span>
                                             </>
                                         )}
                                     </h2>
