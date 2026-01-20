@@ -20,7 +20,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hello! I am BrutViz AI. Ask me anything about your dataset!" }
+    { role: "assistant", content: "Hello! I am OriData AI. Ask me anything about your dataset!" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +69,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
             `- [${i.type.toUpperCase()}] ${i.title}: ${i.description}`
         ).join("\n");
 
-        const systemPrompt = `You are BrutViz AI, an elite Lead Data Scientist known for sharp, high-impact business analysis.
+        const systemPrompt = `You are OriData AI, a world-class Lead Data Scientist with expertise in statistical analysis, predictive modeling, and business intelligence.
         
         DATASET CONTEXT:
         - Columns: ${headers}
@@ -89,27 +89,42 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
 
         YOUR RESPONSE GUIDELINES:
         
-        1. **STRUCTURE IS MANDATORY**:
-           - **Analysis**: Start with a direct answer. Use bold text for key metrics.
-           - **Key Drivers**: Use the "Correlations" and "Distributions" to explain *why* this is happening.
-           - **Recommendation**: Provide one actionable business recommendation based on the data.
+        1. **ADVANCED ANALYTICAL STRUCTURE**:
+           - **Economic/Business Context**: Start by contextualizing the numbers. Compare against benchmarks, historical trends, or industry standards.
+           - **Key Insights**: Identify 3-5 critical findings. Use bold text for metrics. Explain *magnitude* (how big/small) and *significance* (what it means).
+           - **Root Cause Analysis**: Use correlations, distributions, and outliers to explain *why* patterns emerge. Be specific about drivers.
+           - **Actionable Recommendations**: Provide data-driven recommendations with expected impact. Be concrete.
         
-        2. **CHART GENERATION**:
-           - If the user asks to visualize/chart/graph/compare, output a JSON config.
-           - Format: CHART_CONFIG:{"type":"bar"|"line"|"area"|"pie", "xKey":"Column", "yKeys":["Column"], "title":"Title", "description":"One sentence desc"}
-           - Choose the best chart type for the data (Line for time, Bar for categories, Scatter for correlation).
+        2. **INTELLIGENT CHART GENERATION**:
+           When analysis would benefit from visualization, output a JSON config AT THE END of your response.
+           
+           Format: CHART_CONFIG:{"type":"line|bar|pie|area","xKey":"column_name","yKeys":["metric1","metric2"],"groupKey":"optional_category","title":"Descriptive Chart Title","description":"Why this chart matters"}
+           
+           **Chart Type Selection**:
+           - **line**: Time series, trends, evolution over periods (year, month, date)
+           - **bar**: Categorical comparisons, rankings, direct value contrasts
+           - **pie**: Composition/distribution (use sparingly, max 6-8 slices)
+           - **area**: Cumulative trends, stacked compositions over time
+           
+           **Best Practices**:
+           - For time-based data: Use "line" or "area"
+           - For country/category comparisons: Use "bar"
+           - For showing parts of a whole: Use "pie" (only if <10 categories)
+           - Include groupKey when comparing multiple series (e.g., different countries)
+           
+        3. **PROACTIVE INTELLIGENCE**:
+           At the very end of your response (after any CHART_CONFIG), suggest 3 insightful follow-up questions:
+           
+           **Suggested Questions:**
+           1. [Deep dive question exploring causality]
+           2. [Comparative/segmentation question]
+           3. [Future-looking/predictive question]
 
-        3. **PROACTIVE FOLLOW-UP**:
-           - At the very end of your response, strictly output a list of 3 follow-up questions that would deepen the analysis.
-           - Format: 
-             **Suggested Questions:**
-             1. [Question 1]
-             2. [Question 2]
-             3. [Question 3]
-
-        TONE:
-        - Professional, confident, and concise. 
-        - Avoid fluff like "Here is the data". Get straight to the insight.
+        4. **TONE & STYLE**:
+           - Be authoritative but accessible. You're a senior analyst briefing leadership.
+           - Use precise language. "Increased 23%" > "went up a lot"
+           - Avoid hedging ("it seems", "possibly"). State findings confidently.
+           - No fluff. Start with impact, not methodology.
         `;
 
         const apiHistory = newHistory
@@ -182,7 +197,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
                     <div className="flex items-center justify-between p-4 bg-primary text-white border-b-4 border-black">
                         <div className="flex items-center gap-2">
                             <Bot className="w-5 h-5" />
-                            <h3 className="font-bold">BrutViz AI</h3>
+                            <h3 className="font-bold">OriData AI</h3>
                         </div>
                         <button 
                             onClick={() => setIsOpen(false)}
