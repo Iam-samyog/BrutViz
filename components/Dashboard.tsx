@@ -800,9 +800,40 @@ export default function Dashboard() {
                             <h2 className="text-3xl font-black flex items-center gap-3 bg-black text-white p-4 rounded-xl shadow-neo-sm inline-block">
                                 <ArrowUpDown className="w-6 h-6" /> Key AI Insights
                             </h2>
-                            <div className="p-6 border-4 border-black rounded-2xl bg-gray-50/50">
-                                <InsightsPanel data={activeData} />
-                            </div>
+                            {(() => {
+                                const insights = require('@/lib/insights').generateInsights(activeData);
+                                return (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {insights.map((insight: any, idx: number) => (
+                                            <div key={idx} className="p-5 rounded-xl border-2 border-black bg-white shadow-neo-sm">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 rounded-lg border-2 border-black bg-primary/10">
+                                                        {insight.type === 'correlation' && <ArrowUpDown className="w-4 h-4" />}
+                                                        {insight.type === 'outlier' && <AlertCircle className="w-4 h-4" />}
+                                                        {insight.type === 'summary' && <FileText className="w-4 h-4" />}
+                                                        {insight.type === 'distribution' && <BarChart3 className="w-4 h-4" />}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <h4 className="font-black text-xs uppercase tracking-wider text-gray-500">
+                                                                {insight.title}
+                                                            </h4>
+                                                            {insight.score >= 7 && (
+                                                                <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-primary text-white">
+                                                                    KEY
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm font-bold text-black leading-snug">
+                                                            {insight.description.replace(/\*\*/g, '')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         <div className="mt-12 p-8 bg-blue-50 border-4 border-blue-500 rounded-2xl border-dashed text-center space-y-2">
