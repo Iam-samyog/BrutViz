@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Check, X, Table as TableIcon, Layout } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 interface ManualTableCreatorProps {
     onConfirm: (data: any[], fileName: string) => void;
@@ -73,8 +74,9 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-6xl mx-auto p-4 md:p-8 space-y-8"
+            className="relative w-full max-w-6xl mx-auto p-4 md:p-8 space-y-8"
         >
+            <AnimatedBackground count={20} opacity={0.1} />
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <div className="p-4 bg-black text-white rounded-2xl shadow-neo-sm transform -rotate-3">
@@ -100,7 +102,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                     </button>
                     <button 
                         onClick={handleConfirm}
-                        className="px-4 sm:px-8 py-2 sm:py-3 bg-primary text-white border-3 sm:border-4 border-black rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-neo-sm sm:shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
+                        className="px-4 sm:px-8 py-2 sm:py-3 bg-primary text-white border-3 sm:border-4 border-black rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-neo-sm sm:shadow-neo hover:translate-y-[-4px] hover:shadow-neo-lg active:translate-y-[2px] active:shadow-neo-sm transition-all"
                     >
                         Analyze
                     </button>
@@ -178,7 +180,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                 <div className="p-8 flex justify-center border-t-4 border-black bg-black/5">
                     <button 
                         onClick={addRow}
-                        className="group flex items-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4 bg-white border-3 sm:border-4 border-black rounded-2xl sm:rounded-3xl font-black uppercase tracking-widest text-xs sm:text-sm shadow-neo-sm sm:shadow-neo hover:translate-y-1 hover:shadow-neo-sm transition-all"
+                        className="group flex items-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4 bg-white border-3 sm:border-4 border-black rounded-2xl sm:rounded-3xl font-black uppercase tracking-widest text-xs sm:text-sm shadow-neo-sm sm:shadow-neo hover:translate-y-[-4px] hover:shadow-neo-lg active:translate-y-[2px] active:shadow-neo-sm transition-all"
                     >
                         <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
                         Add New Row

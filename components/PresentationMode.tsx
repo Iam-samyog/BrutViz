@@ -78,8 +78,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                         <LayoutDashboard className="w-5 h-5 md:w-8 md:h-8" />
                     </div>
                     <div className="hidden sm:block">
-                        <h3 className="text-white text-lg md:text-2xl font-black tracking-tighter uppercase italic leading-none">BrutViz Live</h3>
-                        <p className="text-white/40 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em]">Presentation Mode</p>
+                        {/* Logo removed per user request */}
                     </div>
                 </div>
 

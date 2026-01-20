@@ -77,8 +77,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
         
         1. STATISTICAL STATS:
         ${statsContext}
-
-        2. CATEGORICAL DISTRIBUTIONS:
+2. CATEGORICAL DISTRIBUTIONS:
         ${categoryContext}
 
         3. DETECTED CORRELATIONS & OUTLIERS (Use these to explain "Why"):
@@ -89,16 +88,16 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
 
         YOUR RESPONSE GUIDELINES:
         
-        1. **ADVANCED ANALYTICAL STRUCTURE**:
+        1. ### **ADVANCED ANALYTICAL STRUCTURE**:
            - **Economic/Business Context**: Start by contextualizing the numbers. Compare against benchmarks, historical trends, or industry standards.
            - **Key Insights**: Identify 3-5 critical findings. Use bold text for metrics. Explain *magnitude* (how big/small) and *significance* (what it means).
            - **Root Cause Analysis**: Use correlations, distributions, and outliers to explain *why* patterns emerge. Be specific about drivers.
            - **Actionable Recommendations**: Provide data-driven recommendations with expected impact. Be concrete.
         
-        2. **INTELLIGENT CHART GENERATION**:
+        2. ### **INTELLIGENT CHART GENERATION**:
            When analysis would benefit from visualization, output a JSON config AT THE END of your response.
            
-           Format: CHART_CONFIG:{"type":"line|bar|pie|area","xKey":"column_name","yKeys":["metric1","metric2"],"groupKey":"optional_category","title":"Descriptive Chart Title","description":"Why this chart matters"}
+           Format: **CHART_CONFIG:**{"type":"line|bar|pie|area","xKey":"column_name","yKeys":["metric1","metric2"],"groupKey":"optional_category","title":"Descriptive Chart Title","description":"Why this chart matters"}
            
            **Chart Type Selection**:
            - **line**: Time series, trends, evolution over periods (year, month, date)
@@ -112,7 +111,7 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
            - For showing parts of a whole: Use "pie" (only if <10 categories)
            - Include groupKey when comparing multiple series (e.g., different countries)
            
-        3. **PROACTIVE INTELLIGENCE**:
+        3. ### **PROACTIVE INTELLIGENCE**:
            At the very end of your response (after any CHART_CONFIG), suggest 3 insightful follow-up questions:
            
            **Suggested Questions:**
@@ -155,9 +154,11 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
 
         let reply = json.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
         
-        // Handle Chart Config
+        // Handle Chart Config (Handle both bold and non-bold versions)
         if (reply.includes("CHART_CONFIG:")) {
-            const parts = reply.split("CHART_CONFIG:");
+            const isBold = reply.includes("**CHART_CONFIG:**");
+            const tag = isBold ? "**CHART_CONFIG:**" : "CHART_CONFIG:";
+            const parts = reply.split(tag);
             const textPart = parts[0].trim();
             const rawConfig = parts[1].trim();
             // Extract JSON even if wrapped in markdown code blocks or trailing text
@@ -177,7 +178,11 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
         setMessages(prev => [...prev, { role: "assistant", content: reply }]);
 
     } catch (err: any) {
-        setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}` }]);
+        let errorMessage = `Error: ${err.message}`;
+        if (err.message?.toLowerCase().includes("quota") || err.message?.includes("429")) {
+            errorMessage = "Oh ohh! The API key quota has been exceeded. Soon this will be fixed! Please try again in 30-60 seconds. \n\nYou can contact the developer at msamyog37@gmail.com or visit the portfolio at samyogm.com.np";
+        }
+        setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
         setIsLoading(false);
     }
@@ -234,9 +239,13 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
                                             "max-w-[80%] p-3 text-sm font-bold rounded-xl border-2 border-black shadow-neo-sm whitespace-pre-wrap",
                                             m.role === "user" ? "bg-black text-white" : "bg-white text-black"
                                         )}>
-                                            {m.role === "assistant" ? m.content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                                            {m.role === "assistant" ? m.content.split(/(\*\*.*?\*\*|###.*?\n|###.*?$)/g).map((part, i) => {
                                                 if (part.startsWith("**") && part.endsWith("**")) {
                                                     return <strong key={i} className="font-black underline decoration-primary/30 decoration-2 underline-offset-2">{part.slice(2, -2)}</strong>;
+                                                }
+                                                if (part.startsWith("###")) {
+                                                    const cleanHeader = part.replace(/^###\s*/, "").trim();
+                                                    return <strong key={i} className="block text-base font-black mt-2 mb-1 text-primary">{cleanHeader}</strong>;
                                                 }
                                                 return part;
                                             }) : m.content}
