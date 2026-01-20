@@ -674,8 +674,63 @@ export default function Dashboard() {
                 <DataTable data={activeData} onDataUpdate={transformedData ? setTransformedData : setData} />
             </div>
             
-             <div className={cn("p-6 transition-all duration-300", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
+             <div className={cn("p-6 transition-all duration-300 space-y-8", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
                 <ChartGenerator data={activeData} />
+                
+                {/* Auto "Why" Insights Section */}
+                <div className="mt-8 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-primary text-white rounded-xl border-4 border-black shadow-neo-sm">
+                            <Lightbulb className="w-6 h-6" />
+                        </div>
+                        <h2 className="text-3xl font-black tracking-tight">Auto "Why" Insights</h2>
+                    </div>
+                    
+                    {(() => {
+                        const { generateInsights } = require('@/lib/insights');
+                        const insights = generateInsights(activeData);
+                        
+                        return (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {insights.filter((i: any) => i.type === 'correlation' || i.type === 'outlier').slice(0, 4).map((insight: any, idx: number) => (
+                                    <div key={idx} className="p-6 rounded-2xl border-4 border-black bg-white shadow-neo hover:shadow-neo-lg hover:-translate-y-1 transition-all">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-3 rounded-xl border-2 border-black bg-primary/10">
+                                                {insight.type === 'correlation' && <TrendingUp className="w-5 h-5 text-primary" />}
+                                                {insight.type === 'outlier' && <AlertCircle className="w-5 h-5 text-destructive" />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h3 className="font-black text-sm uppercase tracking-wider text-gray-600">
+                                                        {insight.title}
+                                                    </h3>
+                                                    {insight.score >= 7 && (
+                                                        <span className="text-xs font-black px-3 py-1 rounded-full bg-primary text-white">
+                                                            KEY
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-base font-bold text-black leading-relaxed">
+                                                    {insight.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                    
+                    {activeData && activeData.length > 0 && (() => {
+                        const { generateInsights } = require('@/lib/insights');
+                        const insights = generateInsights(activeData);
+                        return insights.length === 0 ? (
+                            <div className="p-8 border-4 border-dashed border-gray-200 rounded-2xl text-center">
+                                <p className="text-gray-400 font-bold">No significant patterns detected in current view</p>
+                            </div>
+                        ) : null;
+                    })()}
+                </div>
             </div>
         </div>
       </main>
