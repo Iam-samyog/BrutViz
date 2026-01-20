@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LZString from "lz-string";
 import { jsPDF } from "jspdf";
-import { BarChart3, Table as TableIcon, RefreshCcw, Download, Image as ImageIcon, ImageDown, Trash2, X, Upload, FileText, AlertCircle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Link as LinkIcon, Mail, Copy, Check, LayoutDashboard, Clock, Sticker, Play } from "lucide-react";
+import { BarChart3, Table as TableIcon, RefreshCcw, Download, Image as ImageIcon, ImageDown, Trash2, X, Upload, FileText, AlertCircle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Link as LinkIcon, Mail, Copy, Check, LayoutDashboard, Clock, Sticker, Play, Lightbulb, TrendingUp } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { HistoryShelf } from "@/components/HistoryShelf";
