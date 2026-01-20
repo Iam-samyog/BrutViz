@@ -11,7 +11,7 @@ import { HistoryShelf } from "@/components/HistoryShelf";
 import { StickerPalette } from "@/components/StickerPalette";
 import { PresentationMode } from "@/components/PresentationMode";
 import { get, set } from "idb-keyval";
-import { toPng } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import Papa from "papaparse";
 import QRCode from "react-qr-code";
 import DataInput from "@/components/DataInput";
@@ -45,6 +45,8 @@ export default function Dashboard() {
   const [isStickersOpen, setIsStickersOpen] = useState(false);
   const [isPresentationModeOpen, setIsPresentationModeOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportStatus, setExportStatus] = useState("");
+  const [currentExportPage, setCurrentExportPage] = useState<{ type: 'cover' | 'analysis_1' | 'analysis_2', catKey?: string, numKey?: string } | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
 
   const activeData = transformedData || data;
@@ -187,47 +189,110 @@ export default function Dashboard() {
 
   const handleDownloadAll = async () => {
       setIsExporting(true);
-      // Allow render cycle to complete and charts to stabilize
-      setTimeout(async () => {
-          const element = document.getElementById("full-report-capture");
-          if (!element) {
-              setIsExporting(false);
-              return;
-          }
-          
-          try {
-              const width = element.offsetWidth;
-              const height = element.offsetHeight;
+      setExportStatus("Initializing export...");
+      
+      try {
+          // 1. Calculate all pages needed
+          const pagesToExport: Array<{ type: 'cover' | 'analysis_1' | 'analysis_2', catKey?: string, numKey?: string }> = [
+              { type: 'cover' }
+          ];
 
-              const dataUrl = await toPng(element, { 
+          if (activeData && activeData.length > 0) {
+              const headers = Object.keys(activeData[0]);
+              const numericKeys = headers.filter(key => 
+                  activeData.some(row => typeof row[key] === 'number' || (!isNaN(Number(row[key])) && row[key] !== ''))
+              );
+              const categoricalKeys = headers.filter(key => !numericKeys.includes(key));
+              const xKeys = categoricalKeys.length > 0 ? categoricalKeys : numericKeys;
+
+              xKeys.forEach(catKey => {
+                  numericKeys.forEach(numKey => {
+                      if (catKey !== numKey || categoricalKeys.length === 0) {
+                           // PAGE A: Bar + Line
+                           pagesToExport.push({ type: 'analysis_1', catKey, numKey });
+                           // PAGE B: Pie + Stats
+                           pagesToExport.push({ type: 'analysis_2', catKey, numKey });
+                      }
+                  });
+              });
+          }
+
+          console.log(`Planned ${pagesToExport.length} pages for export.`);
+          const capturedImages: string[] = [];
+          
+          const textEncoder = new TextEncoder();
+          const calculateSize = (base64String: string) => {
+             // Rough estimate
+             return base64String.length * 0.75;
+          };
+          let totalSize = 0;
+
+          // 2. Sequential Capture
+          for (let i = 0; i < pagesToExport.length; i++) {
+              const pageConfig = pagesToExport[i];
+              setExportStatus(`Capturing section ${i + 1} of ${pagesToExport.length}...`);
+              
+              // Trigger Render
+              setCurrentExportPage(pageConfig);
+              
+              // Wait for DOM to stabilize (Chart rendering - no animations so just render tick)
+              await new Promise(r => setTimeout(r, 100)); // 100ms is enough for layout reflow
+
+              const element = document.getElementById("single-export-page");
+              if (!element) throw new Error("Export page container missing");
+
+              const dataUrl = await toJpeg(element, { 
+                  quality: 0.98,
                   backgroundColor: '#ffffff',
-                  pixelRatio: 1.5, // Reduced slightly for faster capture but still high quality
+                  pixelRatio: 3,
                   cacheBust: true,
-                  width: width,
-                  height: height,
-                  style: {
-                      transform: 'scale(1)',
-                      transformOrigin: 'top left'
-                  }
               });
               
-              const pdf = new jsPDF({
-                  orientation: height > width ? "portrait" : "landscape",
-                  unit: "px",
-                  format: [width, height],
-                  compress: true
-              });
-
-              pdf.addImage(dataUrl, 'PNG', 0, 0, width, height);
-              pdf.save(`vizly-report-${Date.now()}.pdf`);
-
-          } catch (err) {
-              console.error("Export failed", err);
-              alert("Failed to generate report. Please try again.");
-          } finally {
-              setIsExporting(false);
+              capturedImages.push(dataUrl);
+              totalSize += calculateSize(dataUrl);
+              
+              // Safety break if we exceed ~200MB in images (browser limit safety)
+              if (totalSize > 200 * 1024 * 1024) {
+                  console.warn("PDF size limit approaching, stopping capture early.");
+                  break;
+              }
           }
-      }, 2500); // Increased timeout to 2.5s for maximum reliability
+
+          // 3. Sequential Assembly
+          setExportStatus("Assembling PDF...");
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();   // 210mm
+          const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+
+          // Page 1: Cover (Full Page)
+          if (capturedImages.length > 0) {
+               const coverImg = capturedImages[0];
+               const imgProps = pdf.getImageProperties(coverImg);
+               const pdfImgHeight = (imgProps.height * pageWidth) / imgProps.width;
+               pdf.addImage(coverImg, 'JPEG', 0, 0, pageWidth, pdfImgHeight);
+          }
+
+          // Pages 2+: Analysis (Hero Layout - 1 Image Per Page)
+          // Each captured image now represents a full "Hero" page
+          const analysisImages = capturedImages.slice(1);
+          for (let i = 0; i < analysisImages.length; i++) {
+              pdf.addPage();
+              const img = analysisImages[i];
+              const imgProps = pdf.getImageProperties(img);
+              const pdfImgHeight = (imgProps.height * pageWidth) / imgProps.width;
+              pdf.addImage(img, 'JPEG', 0, 0, pageWidth, pdfImgHeight);
+          }
+
+          pdf.save(`vizly-analysis-${Date.now()}.pdf`);
+
+      } catch (err: any) {
+          console.error("Export failed:", err);
+          alert(`Failed to generate report: ${err.message || err}`);
+      } finally {
+          setIsExporting(false);
+          setExportStatus("");
+          setCurrentExportPage(null);
+      }
   };
 
   if (!isClient) return null; // Avoid hydration mismatch
@@ -501,10 +566,17 @@ export default function Dashboard() {
                 </button>
                 <button 
                     onClick={handleDownloadAll}
-                    className="px-3 md:px-5 py-2.5 bg-white text-black border-2 border-black hover:translate-y-[-2px] rounded-xl shadow-neo font-black uppercase text-xs tracking-widest flex items-center gap-2 transition-all"
+                    disabled={isExporting}
+                    className="px-3 md:px-5 py-2.5 bg-white text-black border-2 border-black hover:translate-y-[-2px] rounded-xl shadow-neo font-black uppercase text-xs tracking-widest flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-wait"
                 >
-                    <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">EXPORT PDF</span>
+                    {isExporting ? (
+                         <span className="animate-pulse">{exportStatus}</span>
+                    ) : (
+                        <>
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">EXPORT PDF</span>
+                        </>
+                    )}
                 </button>
                 <button 
                     onClick={reset}
@@ -700,68 +772,171 @@ export default function Dashboard() {
             position: 'fixed', 
             top: 0, 
             left: 0, 
-            width: '1200px', 
-            height: 'auto', 
+            width: '1200px', // Fixed A4-ratio width
             zIndex: -10, 
-            backgroundColor: 'white', 
-            padding: '40px',
             visibility: isExporting ? 'visible' : 'hidden',
-            display: isExporting ? 'block' : 'none', // Added display:none to prevent Recharts measurement attempts
             pointerEvents: 'none',
             opacity: isExporting ? 1 : 0
         }}
-        className="space-y-8"
       >
-        {isExporting && (
-            <>
-                <div className="flex items-center justify-between pb-8 border-b-2 border-[rgba(0,0,0,0.1)]">
-                    <h1 className="text-4xl font-black">{fileName} - Analysis Report</h1>
-                    <div className="flex items-center gap-2 text-[rgba(0,0,0,0.5)] font-bold">
-                        <span className="p-2 bg-primary text-white rounded-lg border-2 border-black">
-                            <LayoutDashboard className="w-6 h-6" />
-                        </span>
-                        BrutViz Report
-                    </div>
-                </div>
-                
-                <div className="space-y-4">
-                    <h2 className="text-2xl font-bold flex items-center gap-2"><ArrowUpDown className="w-5 h-5" /> Key Insights</h2>
-                    <InsightsPanel data={activeData} />
-                </div>
-
-                <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
-                    <h2 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Visualizations</h2>
-                    
-                    <div className="grid gap-12">
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-black border-l-4 border-primary pl-3">Bar Chart View</h3>
-                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="bar" />
+        {isExporting && currentExportPage && (
+            <div id="single-export-page" className="bg-white border-b-8 border-black">
+                {currentExportPage.type === 'cover' ? (
+                    // --- COVER PAGE RENDER (Full Height allowed) ---
+                    <div className="p-12 space-y-8 min-h-[1600px]">
+                        <div className="flex items-center justify-between pb-8 border-b-4 border-black">
+                            <div className="space-y-2">
+                                <h1 className="text-5xl font-black tracking-tight uppercase">{fileName}</h1>
+                                <p className="text-xl font-bold text-gray-500">{new Date().toLocaleDateString()} | Automated Analysis</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="p-4 bg-primary text-white rounded-xl border-4 border-black shadow-neo">
+                                    <LayoutDashboard className="w-10 h-10" />
+                                </div>
+                            </div>
                         </div>
                         
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-black border-l-4 border-[#AF52DE] pl-3">Line Chart View</h3>
-                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="line" />
+                        <div className="space-y-6">
+                            <h2 className="text-3xl font-black flex items-center gap-3 bg-black text-white p-4 rounded-xl shadow-neo-sm inline-block">
+                                <ArrowUpDown className="w-6 h-6" /> Key AI Insights
+                            </h2>
+                            <div className="p-6 border-4 border-black rounded-2xl bg-gray-50/50">
+                                <InsightsPanel data={activeData} />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-black border-l-4 border-[#007AFF] pl-3">Area Chart View</h3>
-                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="area" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-black border-l-4 border-[#FF2D55] pl-3">Distribution (Pie)</h3>
-                            <ChartGenerator data={activeData} isStatic={true} forcedChartType="pie" />
+                        <div className="mt-12 p-8 bg-blue-50 border-4 border-blue-500 rounded-2xl border-dashed text-center space-y-2">
+                            <p className="text-2xl font-black text-blue-600">Report Contents</p>
+                            <p className="text-lg font-bold text-blue-400">Comprehensive Visual Analysis on following pages</p>
                         </div>
                     </div>
-                </div>
+                ) : currentExportPage.type === 'analysis_1' ? (
+                    // --- ANALYSIS PAGE 1: COMPARISON & TRENDS (Bar + Line) ---
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col"> 
+                         <div className="flex items-center justify-between border-b-4 border-black pb-6">
+                            <div className="flex items-baseline gap-4">
+                                <h3 className="text-4xl font-black text-black uppercase tracking-tight bg-primary/20 px-4 py-2 rounded-xl">
+                                    {currentExportPage.catKey}
+                                </h3>
+                                <span className="text-gray-400 font-black italic text-2xl">vs</span>
+                                <h3 className="text-4xl font-black text-black uppercase tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl">
+                                    {currentExportPage.numKey}
+                                </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 bg-black text-white rounded-full font-bold text-sm">PART 1</span>
+                                <BarChart3 className="w-12 h-12 text-black/20" />
+                            </div>
+                        </div>
 
-                <div className="space-y-4 pt-8 border-t-2 border-[rgba(0,0,0,0.1)]">
-                    <h2 className="text-2xl font-bold flex items-center gap-2"><TableIcon className="w-5 h-5" /> Data Table</h2>
-                    <div className="border-2 border-black rounded-xl overflow-hidden p-4">
-                        <DataTable data={activeData} showAll={true} />
+                        {/* CHART 1: DIRECT COMPARISON (TOP HALF) */}
+                        <div className="space-y-4 flex-1">
+                            <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-black text-sm">1</span>
+                                <p className="text-xl font-black uppercase tracking-widest text-black/60">Direct Comparison</p>
+                            </div>
+                            <div className="h-[550px] border-4 border-black rounded-3xl overflow-hidden bg-white shadow-neo-lg">
+                                <ChartGenerator 
+                                    data={activeData} 
+                                    isStatic={true} 
+                                    forcedChartType="bar" 
+                                    forcedXAxis={currentExportPage.catKey} 
+                                    forcedYAxis={currentExportPage.numKey} 
+                                    hideConfig={true} 
+                                />
+                            </div>
+                        </div>
+
+                        {/* CHART 2: TREND ANALYSIS (BOTTOM HALF) */}
+                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-gray-200">
+                             <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-black text-sm">2</span>
+                                <p className="text-xl font-black uppercase tracking-widest text-black/60">Trend Analysis</p>
+                            </div>
+                            <div className="h-[550px] border-4 border-black rounded-3xl overflow-hidden bg-white shadow-neo-lg">
+                                <ChartGenerator 
+                                    data={activeData} 
+                                    isStatic={true} 
+                                    forcedChartType="line" 
+                                    forcedXAxis={currentExportPage.catKey} 
+                                    forcedYAxis={currentExportPage.numKey} 
+                                    hideConfig={true} 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-8 text-center text-gray-300">
+                            <p className="text-sm font-black uppercase tracking-[0.5em]">Vizly Analytics • Page 1/2</p>
+                        </div>
                     </div>
-                </div>
-            </>
+                ) : (
+                    // --- ANALYSIS PAGE 2: DISTRIBUTION & STATS (Pie + Summary) ---
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col"> 
+                         <div className="flex items-center justify-between border-b-4 border-black pb-6">
+                            <div className="flex items-baseline gap-4">
+                                <h3 className="text-4xl font-black text-black uppercase tracking-tight bg-primary/20 px-4 py-2 rounded-xl">
+                                    {currentExportPage.catKey}
+                                </h3>
+                                <span className="text-gray-400 font-black italic text-2xl">vs</span>
+                                <h3 className="text-4xl font-black text-black uppercase tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl">
+                                    {currentExportPage.numKey}
+                                </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 bg-black text-white rounded-full font-bold text-sm">PART 2</span>
+                                <BarChart3 className="w-12 h-12 text-black/20" />
+                            </div>
+                        </div>
+
+                        {/* CHART 3: DISTRIBUTION (TOP HALF) */}
+                        <div className="space-y-4 flex-1">
+                            <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-black text-sm">3</span>
+                                <p className="text-xl font-black uppercase tracking-widest text-black/60">Distribution Share</p>
+                            </div>
+                            <div className="h-[600px] border-4 border-black rounded-3xl overflow-hidden bg-white shadow-neo-lg">
+                                <ChartGenerator 
+                                    data={activeData} 
+                                    isStatic={true} 
+                                    forcedChartType="pie" 
+                                    forcedXAxis={currentExportPage.catKey} 
+                                    forcedYAxis={currentExportPage.numKey} 
+                                    hideConfig={true} 
+                                />
+                            </div>
+                        </div>
+
+                         {/* SUMMARY CARD (BOTTOM HALF) */}
+                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-gray-200">
+                             <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg font-black text-sm">4</span>
+                                <p className="text-xl font-black uppercase tracking-widest text-black/60">Statistical Summary</p>
+                            </div>
+                            
+                            <div className="h-[500px] p-8 border-4 border-black rounded-3xl bg-gray-50 flex flex-col justify-center space-y-8">
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="p-6 bg-white rounded-2xl border-2 border-black shadow-sm">
+                                        <p className="text-gray-500 font-bold uppercase text-sm mb-2">Category</p>
+                                        <p className="text-3xl font-black truncate">{currentExportPage.catKey}</p>
+                                    </div>
+                                    <div className="p-6 bg-white rounded-2xl border-2 border-black shadow-sm">
+                                        <p className="text-gray-500 font-bold uppercase text-sm mb-2">Metric</p>
+                                        <p className="text-3xl font-black truncate">{currentExportPage.numKey}</p>
+                                    </div>
+                                </div>
+                                <div className="p-8 bg-blue-50 rounded-2xl border-2 border-blue-200 border-dashed text-center">
+                                    <p className="text-2xl font-black text-blue-400">Detailed Breakdown</p>
+                                    <p className="text-gray-500 mt-2">Refer to the Distribution Chart above for percentage splits.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-8 text-center text-gray-300">
+                             <p className="text-sm font-black uppercase tracking-[0.5em]">Vizly Analytics • Page 2/2</p>
+                        </div>
+                    </div>
+                )}
+            </div>
         )}
       </div>
 

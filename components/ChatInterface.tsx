@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MessageSquare, Send, Bot, Loader2, KeyRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { getDetailedStats, getCategoryDistributions } from "@/lib/insights";
+import { getDetailedStats, getCategoryDistributions, generateInsights } from "@/lib/insights";
 
 interface ChatInterfaceProps {
   data: any[];
@@ -49,52 +49,67 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
     setIsLoading(true);
 
     try {
-        const stats = getDetailedStats(data);
-        const categoricalDist = getCategoryDistributions(data);
+        const validData = data.filter(d => Object.values(d).some(v => v !== null && v !== undefined && v !== ""));
+        const stats = getDetailedStats(validData);
+        const categoricalDist = getCategoryDistributions(validData);
+        const autoInsights = generateInsights(validData);
+
         const headers = Object.keys(data[0] || {}).join(", ");
         const sample = JSON.stringify(data.slice(0, 3));
         
         const statsContext = stats.map(s => 
-            `${s.column}: Mean=${s.mean.toFixed(2)}, Max=${s.max} (Record: ${JSON.stringify(s.maxRow)}), Min=${s.min} (Record: ${JSON.stringify(s.minRow)})`
+            `- ${s.column}: Mean=${s.mean.toFixed(2)}, Max=${s.max}, Min=${s.min}`
         ).join("\n");
 
         const categoryContext = categoricalDist.map(c => 
-            `${c.column}: Top Values = ${c.topValues.map(v => `${v.value} (${v.count})`).join(", ")}`
+            `- ${c.column}: Top Values = ${c.topValues.map(v => `${v.value} (${v.count})`).join(", ")}`
         ).join("\n");
 
-        const systemPrompt = `You are BrutViz AI, a world-class senior data scientist.
+        const autoInsightsContext = autoInsights.map(i => 
+            `- [${i.type.toUpperCase()}] ${i.title}: ${i.description}`
+        ).join("\n");
+
+        const systemPrompt = `You are BrutViz AI, an elite Lead Data Scientist known for sharp, high-impact business analysis.
         
-        DATASET OVERVIEW:
+        DATASET CONTEXT:
         - Columns: ${headers}
         - Total Rows: ${data.length}
         
-        GLOBAL STATISTICAL TRUTH (Outlier Identities):
+        1. STATISTICAL STATS:
         ${statsContext}
 
-        CATEGORICAL DISTRIBUTIONS:
+        2. CATEGORICAL DISTRIBUTIONS:
         ${categoryContext}
 
-        SAMPLE DATA (First 3 rows for structure):
+        3. DETECTED CORRELATIONS & OUTLIERS (Use these to explain "Why"):
+        ${autoInsightsContext}
+
+        SAMPLE ROWS:
         ${sample}
 
-        YOUR MISSION:
-        1. Professional Analysis: Use the GLOBAL STATISTICAL TRUTH to identify the absolute highest/lowest values. Never guess based on the sample data.
-        2. Insight Extraction: Compare dimensions (e.g., "The highest sale was $3,500 for a Conference Table, which is 5x the average").
-        3. Automated Charting: If the user asks to "analyze", "visualize", "show", or "compare", you MUST return a config.
+        YOUR RESPONSE GUIDELINES:
         
-        CHARTING RULES:
-        - Output format: CHART_CONFIG: followed by the JSON object.
-        - Supported types: "bar", "line", "area", "pie".
-        - Always use xKey and yKeys from the provided Columns.
+        1. **STRUCTURE IS MANDATORY**:
+           - **Analysis**: Start with a direct answer. Use bold text for key metrics.
+           - **Key Drivers**: Use the "Correlations" and "Distributions" to explain *why* this is happening.
+           - **Recommendation**: Provide one actionable business recommendation based on the data.
+        
+        2. **CHART GENERATION**:
+           - If the user asks to visualize/chart/graph/compare, output a JSON config.
+           - Format: CHART_CONFIG:{"type":"bar"|"line"|"area"|"pie", "xKey":"Column", "yKeys":["Column"], "title":"Title", "description":"One sentence desc"}
+           - Choose the best chart type for the data (Line for time, Bar for categories, Scatter for correlation).
 
-        FEW-SHOT EXAMPLE:
-        User: "Who is the top performer?"
-        Response: "Based on the global data, **John Doe** leads with 45 sales. CHART_CONFIG:{"type":"bar","xKey":"Name","yKeys":["Sales"],"title":"Top Performers"}"
+        3. **PROACTIVE FOLLOW-UP**:
+           - At the very end of your response, strictly output a list of 3 follow-up questions that would deepen the analysis.
+           - Format: 
+             **Suggested Questions:**
+             1. [Question 1]
+             2. [Question 2]
+             3. [Question 3]
 
-        INSTRUCTIONS:
-        - Use bold text for key metrics.
-        - Be concise but mathematically accurate.
-        - Explain the "Why" behind the numbers using the categorical distributions.
+        TONE:
+        - Professional, confident, and concise. 
+        - Avoid fluff like "Here is the data". Get straight to the insight.
         `;
 
         const apiHistory = newHistory
