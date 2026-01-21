@@ -90,14 +90,18 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                 </button>
 
                 <div className="w-full h-full max-w-7xl flex flex-col relative z-10 px-4 py-4 md:px-20 md:py-8">
-                    {/* Category Selector Toolbar */}
+                    {/* Category Selector Toolbar - Optimized with Horizontal Scroll */}
                     {categories.length > 0 && (
-                        <div className="flex flex-col items-center gap-4 mb-6">
-                            <div className="flex flex-wrap items-center justify-center gap-3">
+                        <div className="w-full relative px-10 mb-8">
+                            {/* Left/Right Fade Gradients */}
+                            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
+                            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
+                            
+                            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth pb-4 px-4 mask-fade-edges">
                                 <button 
                                     onClick={() => setSelectedCategory(null)}
                                     className={cn(
-                                        "px-6 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95",
+                                        "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 whitespace-nowrap shrink-0",
                                         !selectedCategory 
                                             ? "bg-white text-black border-white shadow-[4px_4px_0px_0px_#22c55e]" 
                                             : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"
@@ -106,15 +110,15 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                     🌍 VIEW ALL DATA
                                 </button>
                                 
-                                {categories.slice(0, 2).map((cat) => (
+                                {categories.map((cat) => (
                                     <React.Fragment key={cat.column}>
-                                        <div className="h-8 w-[2px] bg-white/10 hidden md:block mx-2" />
+                                        <div className="h-8 w-[2px] bg-white/20 shrink-0 mx-2" />
                                         {cat.topValues.map((v, i) => (
                                             <button 
                                                 key={`${cat.column}-${i}`}
                                                 onClick={() => setSelectedCategory({ col: cat.column, val: v.value })}
                                                 className={cn(
-                                                    "px-6 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 uppercase",
+                                                    "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 uppercase whitespace-nowrap shrink-0",
                                                     selectedCategory?.val === v.value 
                                                         ? "bg-primary text-white border-primary shadow-[4px_4px_0px_0px_#ffffff]" 
                                                         : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"

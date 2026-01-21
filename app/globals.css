@@ -79,6 +79,17 @@
     .border-neo {
         border: 2px solid black;
     }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .mask-fade-edges {
+        mask-image: linear-gradient(to right, transparent, black 150px, black calc(100% - 150px), transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 150px, black calc(100% - 150px), transparent);
+    }
 }
 
 .dark {

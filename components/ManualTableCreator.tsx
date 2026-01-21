@@ -156,7 +156,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                                         <td key={colIndex} className="p-1 sm:p-2 border-r-2 sm:border-r-4 border-black">
                                                 <input 
                                                     type="text" 
-                                                    value={row[header]}
+                                                    value={row[header] ?? ""}
                                                     onChange={(e) => updateCell(rowIndex, header, e.target.value)}
                                                 className="w-full p-2 sm:p-3 font-bold text-xs sm:text-sm bg-transparent outline-none focus:bg-white focus:shadow-neo-xs rounded-lg sm:rounded-xl transition-all"
                                                 />

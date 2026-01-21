@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -17,10 +17,12 @@ import {
   Cell,
   AreaChart,
   Area,
+  ComposedChart,
 } from "recharts";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { AlertCircle, BarChart3 } from "lucide-react";
+import { AlertCircle, BarChart3, Sparkles } from "lucide-react";
+import { generateForecast } from "@/lib/insights";
 
 interface ChartGeneratorProps {
   data: any[];
@@ -56,6 +58,7 @@ export default function ChartGenerator({
 
   const [xAxisKeyOverride, setXAxisKey] = useState<string>("");
   const [yAxisKeysOverride, setYAxisKeys] = useState<string[]>([]);
+  const [showForecast, setShowForecast] = useState(false);
 
   const xAxisKey = forcedXAxis || xAxisKeyOverride;
   const yAxisKeys = forcedYAxis ? [forcedYAxis] : yAxisKeysOverride;
@@ -80,7 +83,7 @@ export default function ChartGenerator({
   }, [data]);
 
   // Auto-select defaults if not set
-  useMemo(() => {
+  useEffect(() => {
     // Prefer categorical for X, numeric for Y
     if (!xAxisKey && categoricalKeys.length > 0) {
       setXAxisKey(categoricalKeys[0]);
@@ -97,15 +100,6 @@ export default function ChartGenerator({
     }
   }, [categoricalKeys, numericKeys, xAxisKey, yAxisKeys]);
 
-  if (numericKeys.length === 0) {
-    return (
-      <div className="p-8 border rounded-xl border-dashed flex flex-col items-center justify-center text-muted-foreground gap-2">
-        <AlertCircle className="w-6 h-6" />
-        <p>No numeric data found to chart.</p>
-      </div>
-    );
-  }
-
   // Ensure data is formatted for Recharts (numbers are actual numbers)
   const chartData = useMemo(() => {
       return data.map(row => {
@@ -117,35 +111,113 @@ export default function ChartGenerator({
       });
   }, [data, numericKeys]);
 
+  const { augmentedData, forecastData } = useMemo(() => {
+    if (!showForecast || !xAxisKey || yAxisKeys.length === 0) return { augmentedData: chartData, forecastData: [] };
+    
+    // Generate forecast for the first Y axis key
+    const forecast = generateForecast(chartData, xAxisKey, yAxisKeys[0], 6);
+    
+    // Combine to ensure continuity
+    const lastRealPoint = chartData[chartData.length - 1];
+    const combinedData = [...chartData, ...forecast.map(f => ({ ...f, [xAxisKey]: f[xAxisKey] }))];
+    
+    return { augmentedData: combinedData, forecastData: forecast };
+  }, [chartData, showForecast, xAxisKey, yAxisKeys]);
+
+  if (numericKeys.length === 0) {
+    return (
+      <div className="p-8 border rounded-xl border-dashed flex flex-col items-center justify-center text-muted-foreground gap-2">
+        <AlertCircle className="w-6 h-6" />
+        <p>No numeric data found to chart.</p>
+      </div>
+    );
+  }
+
   const renderChart = () => {
     switch (chartType) {
       case "area":
         return (
-          <AreaChart data={chartData}>
+          <ComposedChart data={augmentedData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis dataKey={xAxisKey} style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
             <YAxis style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
             <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+                formatter={(value: any, name: string | undefined, props: any) => {
+                  if (typeof value !== 'number') return [value, name || ''];
+                  if (props.payload.isForecast) return [value.toFixed(2), `${name || ''} (Predicted)`];
+                  return [value, name || ''];
+                }}
             />
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            <Area type="monotone" dataKey={yAxisKeys[0]} stroke="#007AFF" fill="#007AFF" fillOpacity={0.2} isAnimationActive={!isStatic} />
-          </AreaChart>
+            {showForecast && (
+              <Area 
+                type="monotone" 
+                stroke="none"
+                fill={COLORS[0]}
+                fillOpacity={0.1}
+                connectNulls
+                name="Confidence Interval"
+                data={augmentedData.map(d => ({ ...d, range: d.isForecast ? [d.lowerBound, d.upperBound] : null }))}
+                dataKey="range"
+              />
+            )}
+            <Area 
+              type="monotone" 
+              dataKey={yAxisKeys[0]} 
+              stroke={COLORS[0]} 
+              fill={COLORS[0]} 
+              fillOpacity={0.2} 
+              isAnimationActive={!isStatic} 
+              strokeDasharray={showForecast ? "5 5" : "0"}
+            />
+          </ComposedChart>
         );
       case "line":
         return (
-          <LineChart data={chartData}>
+          <ComposedChart data={augmentedData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis dataKey={xAxisKey} style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
             <YAxis style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
             <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+                formatter={(value: any, name: string | undefined, props: any) => {
+                  if (typeof value !== 'number') return [value, name || ''];
+                  if (props.payload.isForecast) return [value.toFixed(2), `${name || ''} (Predicted)`];
+                  return [value, name || ''];
+                }}
             />
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
+            {showForecast && (
+              <Area 
+                type="monotone" 
+                stroke="none"
+                fill={COLORS[0]}
+                fillOpacity={0.1}
+                connectNulls
+                name="Confidence Interval"
+                // Recharts Range Area trick
+                data={augmentedData.map(d => ({ ...d, range: d.isForecast ? [d.lowerBound, d.upperBound] : null }))}
+                dataKey="range"
+              />
+            )}
             {yAxisKeys.map((key, i) => (
-              <Line key={key} type="monotone" dataKey={key} stroke={COLORS[i % COLORS.length]} strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} isAnimationActive={!isStatic} />
+              <Line 
+                key={key} 
+                type="monotone" 
+                dataKey={key} 
+                stroke={COLORS[i % COLORS.length]} 
+                strokeWidth={3} 
+                dot={(props: any) => {
+                  if (props?.payload?.isForecast) return <svg></svg>; // Return empty svg node instead of null
+                  return <circle cx={props.cx} cy={props.cy} r={4} fill={COLORS[i % COLORS.length]} strokeWidth={2} stroke="white" />;
+                }}
+                strokeDasharray={showForecast ? "5 5" : "0"} // Can't be a function per-point in Recharts easily without separate series
+                activeDot={{ r: 6 }} 
+                isAnimationActive={!isStatic} 
+              />
             ))}
-          </LineChart>
+          </ComposedChart>
         );
       case "pie":
         // Group data for Pie charts to avoid clutter
@@ -219,6 +291,26 @@ export default function ChartGenerator({
                 <span className="font-bold text-lg text-black block">Chart Config</span>
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Select your dimensions to analyze</span>
               </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-1">
+              <button
+                disabled={chartType !== 'line' && chartType !== 'area'}
+                onClick={() => setShowForecast(!showForecast)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-black font-black uppercase tracking-widest text-[10px] transition-all shadow-neo-sm",
+                  showForecast ? "bg-primary text-white" : "bg-white text-black hover:bg-gray-50",
+                  (chartType !== 'line' && chartType !== 'area') && "opacity-30 cursor-not-allowed grayscale shadow-none translate-y-0"
+                )}
+              >
+                <Sparkles className={cn("w-3 h-3", showForecast && "animate-pulse")} />
+                {showForecast ? "Forecast Active" : "AI Forecast"}
+              </button>
+              {(chartType !== 'line' && chartType !== 'area') && (
+                <span className="text-[8px] font-bold text-black/30 uppercase max-w-[120px] leading-tight text-right">
+                  Select Line/Area chart to unlock
+                </span>
+              )}
             </div>
           </div>
         

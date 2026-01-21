@@ -10,7 +10,7 @@ import { Footer } from "@/components/Footer";
 import { HistoryShelf } from "@/components/HistoryShelf";
 import { StickerPalette } from "@/components/StickerPalette";
 import { PresentationMode } from "@/components/PresentationMode";
-import { get, set } from "idb-keyval";
+import { get, set, del } from "idb-keyval";
 import { toJpeg } from "html-to-image";
 import Papa from "papaparse";
 import QRCode from "react-qr-code";
@@ -54,50 +54,76 @@ export default function Dashboard() {
   // Check for shared data in URL on mount
   useEffect(() => {
     setIsClient(true);
-    if (typeof window !== "undefined") {
-        const searchParams = new URLSearchParams(window.location.search);
-        const sharedData = searchParams.get("share");
-        if (sharedData) {
-            try {
-                const decompressed = LZString.decompressFromEncodedURIComponent(sharedData);
-                if (decompressed) {
-                    const parsed = JSON.parse(decompressed);
-                    setData(parsed.data);
-                    setFileName(parsed.fileName || "shared_data.csv");
-                    setLoading(false);
-                    // Remove query param to clean URL
-                    window.history.replaceState({}, "", window.location.pathname);
-                    return; 
-                }
-            } catch (e) {
-                console.error("Failed to parse shared URL", e);
-            }
-        }
-    }
-
-    const storedData = localStorage.getItem(STORAGE_KEY_DATA);
-    const storedName = localStorage.getItem(STORAGE_KEY_NAME);
     
-    if (storedData) {
-        try {
-            setData(JSON.parse(storedData));
-        } catch (e) {
-            console.error("Failed to parse stored data", e);
-        }
-    }
-    if (storedName) {
-        setFileName(storedName);
-    }
-    setLoading(false);
+    const loadData = async () => {
+      if (typeof window !== "undefined") {
+          const searchParams = new URLSearchParams(window.location.search);
+          const sharedData = searchParams.get("share");
+          if (sharedData) {
+              try {
+                  const decompressed = LZString.decompressFromEncodedURIComponent(sharedData);
+                  if (decompressed) {
+                      const parsed = JSON.parse(decompressed);
+                      setData(parsed.data);
+                      setFileName(parsed.fileName || "shared_data.csv");
+                      setLoading(false);
+                      // Remove query param to clean URL
+                      window.history.replaceState({}, "", window.location.pathname);
+                      return; 
+                  }
+              } catch (e) {
+                  console.error("Failed to parse shared URL", e);
+              }
+          }
+      }
+
+      try {
+          const storedData: any[] | undefined = await get(STORAGE_KEY_DATA);
+          const storedName: string | undefined = await get(STORAGE_KEY_NAME);
+          
+          if (storedData) {
+              setData(storedData);
+          } else {
+              // Fallback to legacy localStorage if IDB is empty (migration)
+              const legacyData = localStorage.getItem(STORAGE_KEY_DATA);
+              if (legacyData) {
+                  const parsed = JSON.parse(legacyData);
+                  setData(parsed);
+                  // Migration: move to IDB and clear legacy
+                  await set(STORAGE_KEY_DATA, parsed);
+                  localStorage.removeItem(STORAGE_KEY_DATA);
+              }
+          }
+
+          if (storedName) {
+              setFileName(storedName);
+          } else {
+              const legacyName = localStorage.getItem(STORAGE_KEY_NAME);
+              if (legacyName) {
+                  setFileName(legacyName);
+                  await set(STORAGE_KEY_NAME, legacyName);
+                  localStorage.removeItem(STORAGE_KEY_NAME);
+              }
+          }
+      } catch (e) {
+          console.error("Failed to load stored data", e);
+      } finally {
+          setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
-  // Save to localStorage when data changes
+  // Save to IndexedDB when data changes
   useEffect(() => {
-    if (data.length > 0) {
-        localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(data));
-        if (fileName) localStorage.setItem(STORAGE_KEY_NAME, fileName);
+    if (!loading) {
+        if (data.length > 0) {
+            set(STORAGE_KEY_DATA, data).catch(e => console.error("IDB Save Error:", e));
+            if (fileName) set(STORAGE_KEY_NAME, fileName).catch(e => console.error("IDB Name Save Error:", e));
+        }
     }
-  }, [data, fileName]);
+  }, [data, fileName, loading]);
 
   const saveToHistory = async (parsedData: any[], name: string) => {
     const newId = Date.now().toString();
@@ -151,10 +177,12 @@ export default function Dashboard() {
     setAnnotations(annotations.filter(a => a.instanceId !== id));
   };
 
-  const reset = () => {
+  const reset = async () => {
       setData([]);
       setFileName("");
       setCurrentDataId("");
+      await del(STORAGE_KEY_DATA);
+      await del(STORAGE_KEY_NAME);
       localStorage.removeItem(STORAGE_KEY_DATA);
       localStorage.removeItem(STORAGE_KEY_NAME);
   };
@@ -174,7 +202,19 @@ export default function Dashboard() {
 
   const handleShareClick = () => {
       if (!data.length) return;
-      const payload = JSON.stringify({ data, fileName });
+      // Optimize payload by stripping unnecessary whitespace from data strings
+      const payload = JSON.stringify({ 
+          data: data.map(row => {
+              const newRow = { ...row };
+              Object.keys(newRow).forEach(key => {
+                  if (typeof newRow[key] === 'string') {
+                      newRow[key] = newRow[key].trim();
+                  }
+              });
+              return newRow;
+          }), 
+          fileName: fileName.trim() 
+      });
       const compressed = LZString.compressToEncodedURIComponent(payload);
       const url = `${window.location.origin}${window.location.pathname}?share=${compressed}`;
       setShareUrl(url);
@@ -203,11 +243,15 @@ export default function Dashboard() {
                   activeData.some(row => typeof row[key] === 'number' || (!isNaN(Number(row[key])) && row[key] !== ''))
               );
               const categoricalKeys = headers.filter(key => !numericKeys.includes(key));
-              const xKeys = categoricalKeys.length > 0 ? categoricalKeys : numericKeys;
+              
+              // SMART LIMIT: Only export the top 5 categorical and top 5 numeric keys to prevent overflow/slowness
+              const limitedCatKeys = categoricalKeys.slice(0, 5);
+              const limitedNumKeys = numericKeys.slice(0, 5);
+              const xKeys = limitedCatKeys.length > 0 ? limitedCatKeys : limitedNumKeys;
 
               xKeys.forEach(catKey => {
-                  numericKeys.forEach(numKey => {
-                      if (catKey !== numKey || categoricalKeys.length === 0) {
+                  limitedNumKeys.forEach(numKey => {
+                      if (catKey !== numKey || limitedCatKeys.length === 0) {
                            // PAGE A: Bar + Line
                            pagesToExport.push({ type: 'analysis_1', catKey, numKey });
                            // PAGE B: Pie + Stats
@@ -215,6 +259,12 @@ export default function Dashboard() {
                       }
                   });
               });
+
+              // HARD LIMIT: Maximum 25 pages total for stability
+              if (pagesToExport.length > 25) {
+                console.log("Limiting export to first 25 pages for performance.");
+                pagesToExport.splice(25);
+              }
           }
 
           console.log(`Planned ${pagesToExport.length} pages for export.`);
@@ -242,9 +292,9 @@ export default function Dashboard() {
               if (!element) throw new Error("Export page container missing");
 
               const dataUrl = await toJpeg(element, { 
-                  quality: 0.98,
+                  quality: 0.85, // Balanced quality
                   backgroundColor: '#ffffff',
-                  pixelRatio: 3,
+                  pixelRatio: 2, // 2x is enough for sharp A4 prints, 3x is overkill and slow
                   cacheBust: true,
               });
               
@@ -384,7 +434,7 @@ export default function Dashboard() {
                         </span>
                     </h1>
                     <p className="text-xl text-black/60 max-w-2xl mx-auto font-bold leading-relaxed pt-4">
-                        The world's <span className="text-black underline decoration-4 decoration-primary underline-offset-4">fastest</span> Data analyzer. <br/> 
+                        The world's one of the <span className="text-black underline decoration-4 decoration-primary underline-offset-4"> fastest</span> Data analyzer. <br/> 
                         No signups. No hazzle. Just data.
                     </p>
                 </div>
@@ -671,66 +721,11 @@ export default function Dashboard() {
             </div>
 
             <div className={cn("p-6 transition-all duration-300", activeTab === "table" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
-                <DataTable data={activeData} onDataUpdate={transformedData ? setTransformedData : setData} />
+                <DataTable key={currentDataId || 'new'} data={activeData} onDataUpdate={transformedData ? setTransformedData : setData} />
             </div>
             
              <div className={cn("p-6 transition-all duration-300 space-y-8", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
-                <ChartGenerator data={activeData} />
-                
-                {/* Auto "Why" Insights Section */}
-                <div className="mt-8 space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-primary text-white rounded-xl border-4 border-black shadow-neo-sm">
-                            <Lightbulb className="w-6 h-6" />
-                        </div>
-                        <h2 className="text-3xl font-black tracking-tight">Auto "Why" Insights</h2>
-                    </div>
-                    
-                    {(() => {
-                        const { generateInsights } = require('@/lib/insights');
-                        const insights = generateInsights(activeData);
-                        
-                        return (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {insights.filter((i: any) => i.type === 'correlation' || i.type === 'outlier').slice(0, 4).map((insight: any, idx: number) => (
-                                    <div key={idx} className="p-6 rounded-2xl border-4 border-black bg-white shadow-neo hover:shadow-neo-lg hover:-translate-y-1 transition-all">
-                                        <div className="flex items-start gap-4">
-                                            <div className="p-3 rounded-xl border-2 border-black bg-primary/10">
-                                                {insight.type === 'correlation' && <TrendingUp className="w-5 h-5 text-primary" />}
-                                                {insight.type === 'outlier' && <AlertCircle className="w-5 h-5 text-destructive" />}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h3 className="font-black text-sm uppercase tracking-wider text-gray-600">
-                                                        {insight.title}
-                                                    </h3>
-                                                    {insight.score >= 7 && (
-                                                        <span className="text-xs font-black px-3 py-1 rounded-full bg-primary text-white">
-                                                            KEY
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="text-base font-bold text-black leading-relaxed">
-                                                    {insight.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()}
-                    
-                    {activeData && activeData.length > 0 && (() => {
-                        const { generateInsights } = require('@/lib/insights');
-                        const insights = generateInsights(activeData);
-                        return insights.length === 0 ? (
-                            <div className="p-8 border-4 border-dashed border-gray-200 rounded-2xl text-center">
-                                <p className="text-gray-400 font-bold">No significant patterns detected in current view</p>
-                            </div>
-                        ) : null;
-                    })()}
-                </div>
+                <ChartGenerator key={currentDataId || 'new'} data={activeData} />
             </div>
         </div>
       </main>
@@ -761,8 +756,25 @@ export default function Dashboard() {
                             <p className="text-sm font-medium text-[rgba(0,0,0,0.5)]">Scan or copy to view this analysis anywhere.</p>
                         </div>
 
-                        <div className="bg-white p-4 rounded-xl border-2 border-black inline-block shadow-neo-sm">
-                            <QRCode value={shareUrl} size={180} />
+                        <div className="bg-white p-4 rounded-xl border-2 border-black inline-block shadow-neo-sm relative group">
+                            {shareUrl.length < 3300 ? (
+                                <QRCode value={shareUrl} size={180} />
+                            ) : (
+                                <div className="w-[180px] h-[180px] flex flex-col items-center justify-center gap-3 p-4 bg-gray-50 border-2 border-dashed border-black/20 rounded-lg">
+                                    <AlertCircle className="w-8 h-8 text-black/40" />
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-tight text-black/60 leading-tight">
+                                            Data too large for QR
+                                        </p>
+                                        <button 
+                                            onClick={handleCopyLink}
+                                            className="text-[9px] font-black underline decoration-2 decoration-primary underline-offset-2 hover:text-primary transition-colors"
+                                        >
+                                            USE "COPY LINK" INSTEAD
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">

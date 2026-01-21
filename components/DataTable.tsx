@@ -135,7 +135,7 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
                     <td key={col} className="p-0 relative border-r-2 border-black/10 last:border-r-0">
                         <input 
                             className="w-full h-full px-4 py-3 bg-transparent border-none focus:ring-inset focus:ring-2 focus:ring-primary outline-none transition-all truncate font-medium group-hover:bg-white/50"
-                            value={row[col]}
+                            value={row[col] ?? ""}
                             readOnly={showAll}
                             onChange={(e) => handleCellUpdate(i, col, e.target.value)}
                         />

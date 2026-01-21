@@ -221,9 +221,25 @@ export function getDetailedStats(data: any[]) {
 // Get category distributions
 export function getCategoryDistributions(data: any[]) {
     const headers = Object.keys(data[0] || {});
-    const categoricalHeaders = headers.filter(key =>
-        !data.some(row => typeof row[key] === 'number' || (!isNaN(Number(row[key])) && row[key] !== ''))
-    );
+    const rowCount = data.length;
+
+    // Filter for categorical headers with smart heuristics
+    const categoricalHeaders = headers.filter(key => {
+        // Not numeric
+        const isNumeric = data.some(row => typeof row[key] === 'number' || (!isNaN(Number(row[key])) && row[key] !== ''));
+        if (isNumeric) return false;
+
+        // Calculate unique values
+        const uniqueValues = new Set(data.map(row => String(row[key] || ''))).size;
+
+        // HEURISTIC: 
+        // 1. Must have more than 1 value
+        // 2. If it has > 20 values AND unique count is > 20% of rows, it's likely an ID/Noise
+        if (uniqueValues < 2) return false;
+        if (uniqueValues > 20 && uniqueValues > rowCount * 0.2) return false;
+
+        return true;
+    });
 
     return categoricalHeaders.map(column => {
         const valueCounts: { [key: string]: number } = {};
@@ -235,12 +251,100 @@ export function getCategoryDistributions(data: any[]) {
         const topValues = Object.entries(valueCounts)
             .map(([value, count]) => ({ value, count }))
             .sort((a, b) => b.count - a.count)
-            .slice(0, 5);
+            .slice(0, 15); // Show more values for optimization
 
         return {
             column,
             uniqueCount: Object.keys(valueCounts).length,
             topValues
         };
+    }).sort((a, b) => a.uniqueCount - b.uniqueCount); // Prioritize simpler categories
+}
+
+/**
+ * Generates a forecast using Holt's Linear Trend (Double Exponential Smoothing).
+ * Includes pre-processing for data order and basic outlier dampening.
+ */
+export function generateForecast(data: any[], xAxisKey: string, yAxisKey: string, periods: number = 6) {
+    if (!data || data.length < 3) return [];
+
+    // 1. Pre-process and Sort: If the X-axis looks like a date or number, sort it to ensure logical sequence
+    const sortedData = [...data].sort((a, b) => {
+        const valA = a[xAxisKey];
+        const valB = b[xAxisKey];
+
+        // Try date parsing
+        const dateA = Date.parse(valA);
+        const dateB = Date.parse(valB);
+        if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
+
+        // Try numeric sorting
+        const numA = Number(valA);
+        const numB = Number(valB);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+
+        return 0; // Keep original order for categorical
     });
+
+    const values = sortedData.map(r => Number(r[yAxisKey])).filter(v => !isNaN(v));
+    const n = values.length;
+    if (n < 3) return [];
+
+    // 2. Outlier Dampening (Simple Winzorization)
+    // Reduce the impact of extreme points on the smoothing algorithm
+    const sortedValues = [...values].sort((a, b) => a - b);
+    const q1 = sortedValues[Math.floor(n * 0.25)];
+    const q3 = sortedValues[Math.floor(n * 0.75)];
+    const iqr = q3 - q1;
+    const ceiling = q3 + iqr * 2;
+    const floor = q1 - iqr * 2;
+
+    const dampenedValues = values.map(v => Math.max(floor, Math.min(ceiling, v)));
+
+    // 3. Holt's Linear Trend (Double Exponential Smoothing)
+    const alpha = 0.5; // Slightly higher alpha for better responsiveness to recent changes
+    const beta = 0.3;
+
+    // Initialization: level (l) and trend (b)
+    let l = dampenedValues[0];
+    let b = dampenedValues[1] - dampenedValues[0];
+
+    // Smoothing loop
+    for (let i = 1; i < n; i++) {
+        const lastL = l;
+        l = alpha * dampenedValues[i] + (1 - alpha) * (l + b);
+        b = beta * (l - lastL) + (1 - beta) * b;
+    }
+
+    // 4. Uncertainty Estimation (Standard Error of Residuals)
+    let sumSquaredResiduals = 0;
+    let prevLevel = dampenedValues[0];
+    let prevTrend = dampenedValues[1] - dampenedValues[0];
+
+    for (let i = 1; i < n; i++) {
+        const prediction = prevLevel + prevTrend;
+        sumSquaredResiduals += (dampenedValues[i] - prediction) ** 2;
+
+        const nextLevel = alpha * dampenedValues[i] + (1 - alpha) * (prevLevel + prevTrend);
+        prevTrend = beta * (nextLevel - prevLevel) + (1 - beta) * prevTrend;
+        prevLevel = nextLevel;
+    }
+    const stdError = Math.sqrt(sumSquaredResiduals / (n - 1));
+
+    const forecast = [];
+    for (let i = 1; i <= periods; i++) {
+        const prediction = l + (i * b);
+        // Dynamic uncertainty: grows over time
+        const uncertainty = stdError * (1 + Math.sqrt(i) * 0.6);
+
+        forecast.push({
+            [xAxisKey]: `Forecast ${i}`,
+            [yAxisKey]: prediction,
+            isForecast: true,
+            upperBound: prediction + uncertainty,
+            lowerBound: Math.max(0, prediction - uncertainty)
+        });
+    }
+
+    return forecast;
 }
