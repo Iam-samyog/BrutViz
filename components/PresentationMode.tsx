@@ -36,9 +36,15 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
     // Initialize defaults
     React.useEffect(() => {
-        if (!customXAxis && categoricalKeys.length > 0) setCustomXAxis(categoricalKeys[0]);
-        if (!customYAxis && numericKeys.length > 0) setCustomYAxis(numericKeys[0]);
-    }, [categoricalKeys, numericKeys, customXAxis, customYAxis]);
+        if (!customXAxis && categoricalKeys.length > 0) {
+            setCustomXAxis(categoricalKeys[0]);
+        } else if (!customXAxis && numericKeys.length > 0) {
+            setCustomXAxis(numericKeys[0]);
+        }
+        if (!customYAxis && numericKeys.length > 0) {
+            setCustomYAxis(numericKeys[0]);
+        }
+    }, [categoricalKeys, numericKeys]); // Removed customXAxis and customYAxis from dependencies
 
     const categories = React.useMemo(() => getCategoryDistributions(data), [data]);
 
@@ -121,7 +127,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                                     "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 uppercase whitespace-nowrap shrink-0",
                                                     selectedCategory?.val === v.value 
                                                         ? "bg-primary text-white border-primary shadow-[4px_4px_0px_0px_#ffffff]" 
-                                                        : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"
+                                                        : " text-white/40  hover:border-white hover:text-white"
                                                 )}
                                             >
                                                 {v.value}
@@ -147,7 +153,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                     <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
                                         {selectedCategory ? (
                                             <>
-                                                <span className="text-primary underline decoration-white/20">{selectedCategory.val}</span>
+                                                <span className="text-primary  decoration-white/20">{selectedCategory.val}</span>
                                             </>
                                         ) : (
                                             <>

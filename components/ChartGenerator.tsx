@@ -84,21 +84,29 @@ export default function ChartGenerator({
 
   // Auto-select defaults if not set
   useEffect(() => {
+    // If forced values are provided, update local state to match to avoid UI confusion
+    if (forcedChartType) setChartType(forcedChartType);
+    if (forcedXAxis) setXAxisKey(forcedXAxis);
+    if (forcedYAxis) setYAxisKeys([forcedYAxis]);
+
+    // Only set defaults if no forced values and no override values are set
     // Prefer categorical for X, numeric for Y
-    if (!xAxisKey && categoricalKeys.length > 0) {
+    if (!forcedXAxis && !xAxisKeyOverride && categoricalKeys.length > 0) {
       setXAxisKey(categoricalKeys[0]);
-    } else if (!xAxisKey && numericKeys.length > 0) {
+    } else if (!forcedXAxis && !xAxisKeyOverride && numericKeys.length > 0) {
        // fallback if no categorical
        setXAxisKey(numericKeys[0]);
     }
 
-    if (yAxisKeys.length === 0 && numericKeys.length > 0) {
+    if (!forcedYAxis && yAxisKeysOverride.length === 0 && numericKeys.length > 0) {
         // Pick all numeric keys that aren't the X axis? Or just the first one?
         // Let's pick the first one not equal to X
-        const target = numericKeys.find(k => k !== xAxisKey) || numericKeys[0];
+        const currentXAxis = forcedXAxis || xAxisKeyOverride;
+        const target = numericKeys.find(k => k !== currentXAxis) || numericKeys[0];
         if (target) setYAxisKeys([target]);
     }
-  }, [categoricalKeys, numericKeys, xAxisKey, yAxisKeys]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoricalKeys, numericKeys, forcedChartType, forcedXAxis, forcedYAxis]);
 
   // Ensure data is formatted for Recharts (numbers are actual numbers)
   const chartData = useMemo(() => {

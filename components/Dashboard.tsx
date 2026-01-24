@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"table" | "charts">("table");
   const [transformedData, setTransformedData] = useState<any[] | null>(null);
   const [annotations, setAnnotations] = useState<any[]>([]);
+  const [chartConfig, setChartConfig] = useState<{type?: string, xAxis?: string, yAxis?: string}>({});
   
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -132,7 +133,8 @@ export default function Dashboard() {
         fileName: name,
         timestamp: Date.now(),
         rowCount: parsedData.length,
-        data: parsedData
+        data: parsedData,
+        chartConfig: { ...chartConfig }
     };
 
     try {
@@ -157,6 +159,7 @@ export default function Dashboard() {
     setData(item.data);
     setFileName(item.fileName);
     setAnnotations(item.annotations || []);
+    setChartConfig(item.chartConfig || {});
     setCurrentDataId(item.id);
     setTransformedData(null);
     setIsHistoryOpen(false);
@@ -485,9 +488,9 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
                         {[
                             { step: "01", title: "Drop CSV/Excel", desc: "Just drag your file anywhere on the dashboard. We support CSV, Excel, and JSON.", icon: <Upload className="w-6 h-6 text-white"/>, color: "bg-primary" },
-                            { step: "02", title: "Automated Insights", desc: "Our AI immediately scans your data to find trends, outliers, and patterns.", icon: <Search className="w-6 h-6 text-white"/>, color: "bg-[#AF52DE]" },
-                            { step: "03", title: "Custom Charts", desc: "Generate Bar, Line, Pie, and Area charts with zero effort. Fully interactive.", icon: <BarChart3 className="w-6 h-6 text-white"/>, color: "bg-[#FF2D55]" },
-                            { step: "04", title: "Instant Export", desc: "Download high-quality PDF reports or individual charts for your meetings.", icon: <Download className="w-6 h-6 text-white"/>, color: "bg-[#007AFF]" }
+                            { step: "02", title: "Automated Insights", desc: "OriData AI immediately scans your data to find trends, outliers, and patterns.", icon: <Search className="w-6 h-6 text-white"/>, color: "bg-[#AF52DE]" },
+                            { step: "03", title: "Custom Charts", desc: "Generate Bar, Line, Pie, and Area charts with zero effort.", icon: <BarChart3 className="w-6 h-6 text-white"/>, color: "bg-[#FF2D55]" },
+                            { step: "04", title: "Instant Export", desc: "Download high-quality PDF reports  for your meetings.", icon: <Download className="w-6 h-6 text-white"/>, color: "bg-[#007AFF]" }
                         ].map((item, i) => (
                             <motion.div 
                                 key={i}
@@ -725,7 +728,13 @@ export default function Dashboard() {
             </div>
             
              <div className={cn("p-6 transition-all duration-300 space-y-8", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
-                <ChartGenerator key={currentDataId || 'new'} data={activeData} />
+                <ChartGenerator 
+                    key={currentDataId || 'new'} 
+                    data={activeData} 
+                    forcedChartType={chartConfig.type as any}
+                    forcedXAxis={chartConfig.xAxis}
+                    forcedYAxis={chartConfig.yAxis}
+                />
             </div>
         </div>
       </main>
@@ -1052,6 +1061,7 @@ export default function Dashboard() {
       />
 
       <PresentationMode 
+        key={currentDataId}
         data={activeData} 
         isOpen={isPresentationModeOpen} 
         onClose={() => setIsPresentationModeOpen(false)} 
