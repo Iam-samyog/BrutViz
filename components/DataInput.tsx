@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, FileText, X, BarChart3, Sparkles, Share2, Database, Code2 } from "lucide-react";
+import { Upload, FileText, X, BarChart3, Sparkles, Share2, Database, Code2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Papa from "papaparse";
 import { read, utils } from "xlsx";
@@ -22,10 +22,36 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
     try {
       if (type === "json") {
         const data = JSON.parse(content);
+        let arrayData: any[] | null = null;
+        
+        // If it's directly an array, use it
         if (Array.isArray(data)) {
-          onDataParsed(data, name || "data.json");
+          arrayData = data;
+        } 
+        // If it's an object, try to find an array property
+        else if (typeof data === "object" && data !== null) {
+          // Find the first property that is an array
+          const keys = Object.keys(data);
+          let largestArray: any[] | null = null;
+          let largestSize = 0;
+          
+          for (const key of keys) {
+            const value = data[key];
+            if (Array.isArray(value) && value.length > largestSize) {
+              largestArray = value;
+              largestSize = value.length;
+            }
+          }
+          
+          if (largestArray) {
+            arrayData = largestArray;
+          }
+        }
+        
+        if (arrayData && arrayData.length > 0) {
+          onDataParsed(arrayData, name || "data.json");
         } else {
-          setError("JSON must be an array of objects.");
+          setError("JSON must contain an array of objects. Found object with no array properties.");
         }
       } else {
         Papa.parse(content, {
@@ -197,6 +223,30 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
                 </div>
             </div>
         </div>
+
+        {/* Error Display */}
+        <AnimatePresence>
+            {error && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-destructive/10 border-4 border-destructive rounded-2xl p-4 flex items-start gap-3"
+                >
+                    <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <p className="font-black text-destructive text-sm uppercase tracking-tight mb-1">Error</p>
+                        <p className="text-sm font-bold text-black/80">{error}</p>
+                    </div>
+                    <button
+                        onClick={() => setError(null)}
+                        className="shrink-0 p-1 hover:bg-black/5 rounded-lg transition-colors"
+                    >
+                        <X className="w-4 h-4 text-black/60" />
+                    </button>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
         {/* Floating Icons or Decorative Elements */}
         <div className="flex justify-center gap-12 opacity-10 grayscale py-8">

@@ -296,7 +296,7 @@ export default function ChartGenerator({
                   <BarChart3 className="w-5 h-5" />
               </div>
               <div>
-                <span className="font-bold text-lg text-black block">Chart Config</span>
+                <span className="font-bold text-lg text-black block">Charts</span>
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Select your dimensions to analyze</span>
               </div>
             </div>
