@@ -72,6 +72,22 @@ npm run dev
 
 ---
 
+## 🤖 Daily Improvement Agent
+
+BrutViz includes an intelligent **Daily Improvement Agent** that automatically:
+- 📦 Updates dependencies and security patches
+- 🔒 Runs security audits and fixes vulnerabilities
+- ✨ Improves code quality with linting and formatting
+- ⚡ Optimizes performance and detects unused code
+- 📚 Keeps documentation up-to-date
+- 🤖 Provides AI-powered code review suggestions using Gemini
+
+**The agent runs automatically every day** and creates pull requests with improvements. It takes the project to the next level by continuously maintaining and enhancing code quality, security, and performance.
+
+[📖 Learn more about the Daily Improvement Agent](.github/AGENT_README.md)
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
