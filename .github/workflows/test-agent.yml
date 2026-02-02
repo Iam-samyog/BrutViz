@@ -1,0 +1,126 @@
+name: Test Agent Installation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Agent Files
+        run: |
+          echo "🔍 Checking agent installation..."
+          echo ""
+
+          # Check workflow files
+          if [ -f ".github/workflows/daily-improvement-agent.yml" ]; then
+            echo "✅ Daily improvement workflow found"
+          else
+            echo "❌ Daily improvement workflow missing"
+            exit 1
+          fi
+
+          if [ -f ".github/workflows/weekly-review.yml" ]; then
+            echo "✅ Weekly review workflow found"
+          else
+            echo "❌ Weekly review workflow missing"
+            exit 1
+          fi
+
+          # Check script files
+          if [ -f ".github/scripts/improvement-agent.js" ]; then
+            echo "✅ Improvement agent script found"
+          else
+            echo "❌ Improvement agent script missing"
+            exit 1
+          fi
+
+          if [ -f ".github/scripts/ai-code-reviewer.js" ]; then
+            echo "✅ AI code reviewer script found"
+          else
+            echo "❌ AI code reviewer script missing"
+            exit 1
+          fi
+
+          # Check documentation
+          if [ -f ".github/AGENT_README.md" ]; then
+            echo "✅ Agent documentation found"
+          else
+            echo "❌ Agent documentation missing"
+            exit 1
+          fi
+
+          echo ""
+          echo "🎉 All agent files are properly installed!"
+
+      - name: Validate JavaScript Syntax
+        run: |
+          echo "🔍 Validating JavaScript syntax..."
+          node --check .github/scripts/improvement-agent.js
+          node --check .github/scripts/ai-code-reviewer.js
+          echo "✅ JavaScript syntax is valid"
+
+      - name: Test Agent Configuration
+        run: |
+          echo "🔍 Testing agent configuration..."
+          if [ -f ".github/agent-config.env" ]; then
+            echo "✅ Configuration file found"
+            echo ""
+            echo "📋 Configuration summary:"
+            grep "^[A-Z]" .github/agent-config.env | head -10
+          else
+            echo "⚠️  Configuration file not found (optional)"
+          fi
+
+      - name: Check Dependencies
+        run: |
+          echo "🔍 Checking project dependencies..."
+          npm ci
+          echo "✅ Dependencies installed successfully"
+
+      - name: Dry Run Security Audit
+        run: |
+          echo "🔍 Running security audit (dry run)..."
+          npm audit --json > audit-test.json || true
+          if [ -s audit-test.json ]; then
+            echo "✅ Security audit completed"
+            cat audit-test.json | grep -o '"total":[0-9]*' | head -1 || echo "No vulnerabilities format found"
+          fi
+
+      - name: Test Linter
+        run: |
+          echo "🔍 Testing linter configuration..."
+          npm run lint || echo "⚠️  Linter has warnings (this is okay)"
+
+      - name: Installation Summary
+        run: |
+          echo ""
+          echo "======================================"
+          echo "  Daily Improvement Agent Status"
+          echo "======================================"
+          echo ""
+          echo "✅ Agent successfully installed!"
+          echo ""
+          echo "📋 Next Steps:"
+          echo "1. Add GEMINI_API_KEY secret for AI features"
+          echo "2. Enable workflow permissions in Settings"
+          echo "3. Wait for scheduled run or trigger manually"
+          echo ""
+          echo "📖 Documentation:"
+          echo "- Setup: .github/SETUP_GUIDE.md"
+          echo "- Usage: .github/AGENT_README.md"
+          echo "- Architecture: .github/ARCHITECTURE.md"
+          echo ""
+          echo "======================================"
