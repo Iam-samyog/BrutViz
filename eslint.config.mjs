@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // GitHub Actions scripts use CommonJS, not part of Next.js app:
+    ".github/**",
   ]),
 ]);
 
