@@ -45,8 +45,8 @@ jobs:
           
           # Dependencies
           echo "### 📦 Dependencies" >> report.md
-          echo "- Total dependencies: $(cat package.json | grep -A 100 '"dependencies"' | grep ':' | wc -l)" >> report.md
-          echo "- Dev dependencies: $(cat package.json | grep -A 100 '"devDependencies"' | grep ':' | wc -l)" >> report.md
+          echo "- Total dependencies: $(node -p 'Object.keys(require(\"./package.json\").dependencies || {}).length')" >> report.md
+          echo "- Dev dependencies: $(node -p 'Object.keys(require(\"./package.json\").devDependencies || {}).length')" >> report.md
           echo "" >> report.md
           
           # Git activity

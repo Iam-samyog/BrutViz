@@ -12,6 +12,7 @@
  */
 
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
@@ -108,7 +109,7 @@ class ImprovementAgent {
           
           // Try to auto-fix
           try {
-            execSync('npm audit fix --force', { stdio: 'inherit' });
+            execSync('npm audit fix', { stdio: 'inherit' });
             this.improvements.push('✓ Applied security fixes automatically');
             this.hasChanges = true;
           } catch (e) {
@@ -211,11 +212,7 @@ class ImprovementAgent {
       // Check if README needs updating
       const readme = await fs.readFile('README.md', 'utf-8');
       
-      // Update badges with latest info
-      const packageJson = JSON.parse(await fs.readFile('package.json', 'utf-8'));
-      const dependencies = packageJson.dependencies || {};
-      
-      // Add a note about last updated
+      // Add a note about last updated if not present
       if (!readme.includes('Last Updated:')) {
         const today = new Date().toISOString().split('T')[0];
         const updatedReadme = readme + `\n\n---\n\n*Last Updated: ${today}*\n`;
@@ -233,7 +230,12 @@ class ImprovementAgent {
 
     // Set GitHub Actions outputs
     const setOutput = (name, value) => {
-      console.log(`::set-output name=${name}::${value}`);
+      // Use the modern GITHUB_OUTPUT method if available, fallback to deprecated method
+      if (process.env.GITHUB_OUTPUT) {
+        fsSync.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
+      } else {
+        console.log(`::set-output name=${name}::${value}`);
+      }
     };
 
     setOutput('has_changes', this.hasChanges);
