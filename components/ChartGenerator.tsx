@@ -18,16 +18,17 @@ import {
   AreaChart,
   Area,
   ComposedChart,
+  Sankey,
 } from "recharts";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { AlertCircle, BarChart3, Sparkles } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import { generateForecast } from "@/lib/insights";
 
 interface ChartGeneratorProps {
   data: any[];
   isStatic?: boolean;
-  forcedChartType?: "bar" | "line" | "area" | "pie";
+  forcedChartType?: "bar" | "line" | "area" | "pie" | "sankey" | "kp";
   forcedXAxis?: string;
   forcedYAxis?: string;
   forcedShowForecast?: boolean;
@@ -164,7 +165,33 @@ export default function ChartGenerator({
     return { augmentedData: combinedData };
   }, [chartData, showForecast, xAxisKey, yAxisKeys]);
 
-  if (numericKeys.length === 0) {
+  // Build Sankey data from first two categorical columns
+  const sankeyData = useMemo(() => {
+    if (categoricalKeys.length < 2 || !data.length) return null;
+    const sourceKey = categoricalKeys[0];
+    const targetKey = categoricalKeys[1];
+    const valueKey = numericKeys[0];
+    const nodeNames = Array.from(new Set([
+      ...data.map(r => String(r[sourceKey])),
+      ...data.map(r => String(r[targetKey])),
+    ]));
+    const nodeMap = new Map(nodeNames.map((n, i) => [n, i]));
+    const linkMap = new Map<string, number>();
+    data.forEach(row => {
+      const s = String(row[sourceKey]);
+      const t = String(row[targetKey]);
+      const key = `${s}__${t}`;
+      const v = Number(row[valueKey]) || 1;
+      linkMap.set(key, (linkMap.get(key) || 0) + v);
+    });
+    const links = Array.from(linkMap.entries()).map(([key, value]) => {
+      const [s, t] = key.split('__');
+      return { source: nodeMap.get(s)!, target: nodeMap.get(t)!, value };
+    }).filter(l => l.source !== l.target && l.value > 0);
+    return { nodes: nodeNames.map(name => ({ name })), links };
+  }, [data, categoricalKeys, numericKeys]);
+
+  if (numericKeys.length === 0 && chartType !== 'sankey') {
     return (
       <div className="p-8 border rounded-xl border-dashed flex flex-col items-center justify-center text-muted-foreground gap-2">
         <AlertCircle className="w-6 h-6" />
@@ -175,6 +202,99 @@ export default function ChartGenerator({
 
   const renderChart = () => {
     switch (chartType) {
+      case "sankey": {
+        if (!sankeyData || sankeyData.nodes.length === 0 || sankeyData.links.length === 0) {
+          return (
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-black/40">
+              <AlertCircle className="w-8 h-8" />
+              <p className="text-sm font-black uppercase tracking-tight">Need 2+ text columns for flow</p>
+            </div>
+          );
+        }
+        return (
+          <Sankey
+            width={500}
+            height={400}
+            data={sankeyData}
+            nodeWidth={12}
+            nodePadding={24}
+            linkCurvature={0.5}
+            iterations={32}
+            node={{ fill: '#3B82F6', stroke: '#000', strokeWidth: 2 }}
+            link={{ stroke: '#3B82F6', strokeOpacity: 0.25 }}
+          >
+            <Tooltip
+              content={({ active, payload }: any) => {
+                if (!active || !payload?.length) return null;
+                const d = payload[0]?.payload;
+                const label = d?.name || `${d?.source?.name} → ${d?.target?.name}`;
+                const value = d?.value;
+                return (
+                  <div className="bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl text-xs font-black">
+                    <p className="text-black/40 uppercase tracking-widest mb-1">{label}</p>
+                    {value !== undefined && <p className="text-primary">{Number(value).toLocaleString()}</p>}
+                  </div>
+                );
+              }}
+            />
+          </Sankey>
+        );
+      }
+
+      case "kp": {
+        // PUBG KP-style stacked bar with gold/black esports aesthetic
+        const kpY1 = numericKeys[0] || '';
+        const kpY2 = numericKeys[1] || numericKeys[0] || '';
+        const KP_GOLD = '#F5C518';
+        const KP_DARK = '#1a1a2e';
+        return (
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} style={{ background: 'transparent' }}>
+            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#fff" opacity={0.08} />
+            <XAxis
+              dataKey={xAxisKey}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 10, fontWeight: 900, fill: '#F5C518', opacity: 0.8 }}
+              dy={8}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 10, fontWeight: 900, fill: '#fff', opacity: 0.5 }}
+            />
+            <Tooltip
+              cursor={{ fill: 'rgba(245,197,24,0.08)' }}
+              content={({ active, payload, label }: any) => {
+                if (!active || !payload?.length) return null;
+                return (
+                  <div className="bg-[#1a1a2e] border-2 border-[#F5C518] p-3 shadow-[4px_4px_0px_0px_#F5C518] rounded-xl">
+                    <p className="font-black text-xs uppercase tracking-widest text-[#F5C518] mb-2 border-b border-[#F5C518]/20 pb-1">{label}</p>
+                    {payload.map((e: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-sm" style={{ background: e.fill }} />
+                        <span className="text-xs font-black text-white">{e.name}: <span className="text-[#F5C518]">{Number(e.value).toLocaleString()}</span></span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}
+            />
+            <Legend
+              verticalAlign="top"
+              align="right"
+              iconType="square"
+              wrapperStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#F5C518' }}
+            />
+            <Bar dataKey={kpY1} name="Kill Points" stackId="kp" fill={KP_GOLD} radius={[0,0,0,0]} isAnimationActive={!isStatic} barSize={28} />
+            {kpY2 !== kpY1 && (
+              <Bar dataKey={kpY2} name="Placement Pts" stackId="kp" fill={KP_DARK} radius={[4,4,0,0]} isAnimationActive={!isStatic} barSize={28}
+                stroke={KP_GOLD} strokeWidth={1}
+              />
+            )}
+          </BarChart>
+        );
+      }
+
       case "area":
         return (
           <ComposedChart data={augmentedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -414,8 +534,7 @@ export default function ChartGenerator({
         isStatic ? (
           <div 
               className={cn(
-                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg",
-                  fullHeight ? "flex-1 min-h-0" : "h-[500px]"
+                  fullHeight ? "flex-1 min-h-0 w-full" : "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg h-[500px]"
               )}
           >
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -429,8 +548,7 @@ export default function ChartGenerator({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
               className={cn(
-                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg",
-                  fullHeight ? "flex-1 min-h-0" : "h-[500px]"
+                  fullHeight ? "flex-1 min-h-0 w-full" : "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg h-[500px]"
               )}
           >
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>

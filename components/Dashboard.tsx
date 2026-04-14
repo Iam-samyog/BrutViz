@@ -767,16 +767,35 @@ export default function Dashboard() {
                                     fullHeight={true}
                                     forcedXAxis={chartConfig.xAxis}
                                     forcedYAxis={chartConfig.yAxis}
+                                    forcedShowForecast={chartConfig.showForecast}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* LEFT BOTTOM COLUMN (Pie) */}
-                                <div className="space-y-6 h-full">
-                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[600px]">
+                            {/* SECOND ROW: Pie + Sankey + KP (3 columns) */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Pie Chart */}
+                                <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
+                                    <ChartGenerator 
+                                        data={activeData} 
+                                        forcedChartType="pie"
+                                        hideConfig={true}
+                                        fullHeight={true}
+                                        forcedXAxis={chartConfig.xAxis}
+                                        forcedYAxis={chartConfig.yAxis}
+                                        forcedShowForecast={chartConfig.showForecast}
+                                    />
+                                </div>
+
+                                {/* Sankey Flow Chart */}
+                                <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px] flex flex-col">
+                                    <div className="px-5 pt-4 pb-2 border-b-2 border-black/5 flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Flow</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-black">Sankey</span>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
                                         <ChartGenerator 
                                             data={activeData} 
-                                            forcedChartType="pie"
+                                            forcedChartType="sankey"
                                             hideConfig={true}
                                             fullHeight={true}
                                             forcedXAxis={chartConfig.xAxis}
@@ -785,28 +804,57 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                {/* RIGHT BOTTOM COLUMN (Line + Area) */}
-                                <div className="space-y-6">
-                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[290px]">
+                                {/* PUBG Mobile KP Graph */}
+                                <div className="bg-[#0d0d1a] border-4 border-[#F5C518] rounded-3xl shadow-[6px_6px_0px_0px_#F5C518] overflow-hidden h-[500px] flex flex-col">
+                                    <div className="px-5 pt-4 pb-2 border-b-2 border-[#F5C518]/20 flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#F5C518]/60">Esports</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#F5C518]">KP Graph</span>
+                                        <span className="ml-auto text-[9px] font-black uppercase tracking-widest text-[#F5C518]/40 bg-[#F5C518]/10 px-2 py-0.5 rounded-full">PUBG Mobile</span>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
                                         <ChartGenerator 
                                             data={activeData} 
-                                            forcedChartType="line"
+                                            forcedChartType="kp"
                                             hideConfig={true}
                                             fullHeight={true}
                                             forcedXAxis={chartConfig.xAxis}
                                             forcedYAxis={chartConfig.yAxis}
                                         />
                                     </div>
-                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[290px]">
-                                        <ChartGenerator 
-                                            data={activeData} 
-                                            forcedChartType="area"
-                                            hideConfig={true}
-                                            fullHeight={true}
-                                            forcedXAxis={chartConfig.xAxis}
-                                            forcedYAxis={chartConfig.yAxis}
-                                        />
+                                </div>
+                            </div>
+
+                            {/* AI FORECAST ROW — Full-width Line + Area */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3 px-1">
+                                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                        <span className="text-[10px] font-black uppercase tracking-widest">✦ AI Forecast Analysis</span>
                                     </div>
+                                    <div className="flex-1 h-px bg-black/10" />
+                                </div>
+                                {/* Full-width Line chart with forecast */}
+                                <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
+                                    <ChartGenerator 
+                                        data={activeData} 
+                                        forcedChartType="line"
+                                        hideConfig={true}
+                                        fullHeight={true}
+                                        forcedXAxis={chartConfig.xAxis}
+                                        forcedYAxis={chartConfig.yAxis}
+                                        forcedShowForecast={true}
+                                    />
+                                </div>
+                                {/* Full-width Area chart with forecast */}
+                                <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
+                                    <ChartGenerator 
+                                        data={activeData} 
+                                        forcedChartType="area"
+                                        hideConfig={true}
+                                        fullHeight={true}
+                                        forcedXAxis={chartConfig.xAxis}
+                                        forcedYAxis={chartConfig.yAxis}
+                                        forcedShowForecast={true}
+                                    />
                                 </div>
                             </div>
                         </div>
