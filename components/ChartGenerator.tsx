@@ -31,7 +31,10 @@ interface ChartGeneratorProps {
   forcedXAxis?: string;
   forcedYAxis?: string;
   hideConfig?: boolean;
+  hideChart?: boolean;
+  hideTypeSelector?: boolean;
   fullHeight?: boolean;
+  onConfigChange?: (config: { type?: string, xAxis?: string, yAxis?: string }) => void;
 }
 
 const COLORS = [
@@ -51,7 +54,10 @@ export default function ChartGenerator({
   forcedXAxis,
   forcedYAxis,
   hideConfig = false, 
-  fullHeight = false 
+  hideChart = false,
+  hideTypeSelector = false,
+  fullHeight = false,
+  onConfigChange
 }: ChartGeneratorProps) {
   const [chartTypeState, setChartType] = useState<"bar" | "line" | "area" | "pie">("bar");
   const chartType = forcedChartType || chartTypeState; // Override if forced
@@ -289,121 +295,77 @@ export default function ChartGenerator({
   return (
     <div className={cn("space-y-6", fullHeight && "h-full space-y-0 flex flex-col")}>
       {!hideConfig && (
-        <div className="bg-white p-4 sm:p-5 rounded-xl border-2 border-black shadow-neo-sm space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary text-white border-2 border-black rounded-lg shadow-sm">
-                  <BarChart3 className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="font-bold text-lg text-black block">Charts</span>
-                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Select your dimensions to analyze</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-1">
-              <button
-                disabled={chartType !== 'line' && chartType !== 'area'}
-                onClick={() => setShowForecast(!showForecast)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-black font-black uppercase tracking-widest text-[10px] transition-all shadow-neo-sm",
-                  showForecast ? "bg-primary text-white" : "bg-white text-black hover:bg-gray-50",
-                  (chartType !== 'line' && chartType !== 'area') && "opacity-30 cursor-not-allowed grayscale shadow-none translate-y-0"
-                )}
-              >
-                <Sparkles className={cn("w-3 h-3", showForecast && "animate-pulse")} />
-                {showForecast ? "Forecast Active" : "AI Forecast"}
-              </button>
-              {(chartType !== 'line' && chartType !== 'area') && (
-                <span className="text-[8px] font-bold text-black/30 uppercase max-w-[120px] leading-tight text-right">
-                  Select Line/Area chart to unlock
-                </span>
-              )}
-            </div>
-          </div>
-        
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center text-[8px]">📊</span>
-                    Chart Type
+          <div className="flex flex-wrap items-center gap-8">
+              <div className="flex items-center gap-3 group">
+                  <label className="text-[11px] font-black text-black/40 uppercase tracking-tighter flex items-center gap-1.5 group-hover:text-primary transition-colors shrink-0">
+                    <span className="text-primary font-black">X</span>
+                    <span>:</span>
                   </label>
                   <select
-                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
-                  value={chartType}
-                  onChange={(e) => setChartType(e.target.value as any)}
-                  >
-                  <option value="bar">Bar Chart</option>
-                  <option value="line">Line Chart</option>
-                  <option value="area">Area Chart</option>
-                  <option value="pie">Pie Chart</option>
-                  </select>
-              </div>
-
-              <div className="space-y-2">
-                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-primary/20 text-primary flex items-center justify-center text-[8px] font-black">X</span>
-                    Dimension (Categories)
-                  </label>
-                  <select
-                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
+                  className="min-w-[120px] py-1.5 px-2 rounded-lg bg-black/5 hover:bg-black/10 border-none outline-none transition-all text-xs cursor-pointer font-extrabold"
                   value={xAxisKey}
-                  onChange={(e) => setXAxisKey(e.target.value)}
+                  onChange={(e) => {
+                    const newX = e.target.value;
+                    setXAxisKey(newX);
+                    onConfigChange?.({ type: chartType, xAxis: newX, yAxis: yAxisKeys[0] });
+                  }}
                   >
                   {categoricalKeys.concat(numericKeys).map(k => (
                       <option key={k} value={k}>{k}</option>
                   ))}
                   </select>
-                  <p className="text-[9px] font-bold text-black/30 ml-1">Groups your data (e.g., Date, Region)</p>
               </div>
 
-              <div className="space-y-2">
-                  <label className="text-[10px] font-black text-black ml-1 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-[#22c55e]/20 text-[#22c55e] flex items-center justify-center text-[8px] font-black">Y</span>
-                    Measure (Values)
+              <div className="flex items-center gap-3 group">
+                  <label className="text-[11px] font-black text-black/40 uppercase tracking-tighter flex items-center gap-1.5 group-hover:text-[#22c55e] transition-colors shrink-0">
+                    <span className="text-[#22c55e] font-black">Y</span>
+                    <span>:</span>
                   </label>
                   <select
-                  className="block w-full p-3 rounded-xl border-2 border-black bg-white focus:shadow-neo focus:border-primary outline-none transition-all text-sm cursor-pointer font-bold"
+                  className="min-w-[120px] py-1.5 px-2 rounded-lg bg-black/5 hover:bg-black/10 border-none outline-none transition-all text-xs cursor-pointer font-extrabold"
                   value={yAxisKeys[0] || ""}
-                  onChange={(e) => setYAxisKeys([e.target.value])}
+                  onChange={(e) => {
+                    const newY = e.target.value;
+                    setYAxisKeys([newY]);
+                    onConfigChange?.({ type: chartType, xAxis, yAxis: newY });
+                  }}
                   >
                   {numericKeys.map(k => (
                       <option key={k} value={k}>{k}</option>
                   ))}
                   </select>
-                  <p className="text-[9px] font-bold text-black/30 ml-1">What to measure (e.g., Sales, Profit)</p>
               </div>
           </div>
-        </div>
       )}
 
-
-      {isStatic ? (
-        <div 
-            className={cn(
-                "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
-                fullHeight ? "flex-1 min-h-0" : "h-[500px]"
-            )}
-        >
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                {renderChart()}
-            </ResponsiveContainer>
-        </div>
-      ) : (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className={cn(
-                "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
-                fullHeight ? "flex-1 min-h-0" : "h-[500px]"
-            )}
-        >
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                {renderChart()}
-            </ResponsiveContainer>
-        </motion.div>
+      {!hideChart && (
+        isStatic ? (
+          <div 
+              className={cn(
+                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
+                  fullHeight ? "flex-1 min-h-0" : "h-[500px]"
+              )}
+          >
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                  {renderChart()}
+              </ResponsiveContainer>
+          </div>
+        ) : (
+          <motion.div
+              layout
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className={cn(
+                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
+                  fullHeight ? "flex-1 min-h-0" : "h-[500px]"
+              )}
+          >
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                  {renderChart()}
+              </ResponsiveContainer>
+          </motion.div>
+        )
       )}
     </div>
   );

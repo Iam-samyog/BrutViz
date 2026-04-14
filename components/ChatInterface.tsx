@@ -107,60 +107,53 @@ export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProp
 //            - 1 Dynamic 'What-if' question.
 
 //         4. **TONE & STYLE**:
-//            - Be authoritative but accessible. You're a senior analyst briefing leadership.
-//            - Use precise language. "Increased 23%" > "went up a lot"
-//            - Avoid hedging ("it seems", "possibly"). State findings confidently.
-//            - No fluff. Start with impact, not methodology.
-//         `;
         const systemPrompt = `
-You are OriData AI, a world-class Lead Data Scientist. You are holding a conversational chat with a user about their dataset.
+You are OriData AI, a world-class Lead Data Scientist with expertise in statistical analysis, predictive modeling, and business intelligence. 
 
 ---
 
 ## CONVERSATIONAL PHILOSOPHY
-1. **Be Conversational First**: If the user says "Hello" or "How are you?", respond naturally and briefly. Do not dump a full statistical analysis unless they ask for it or it's the first message after an upload.
-2. **Prioritize the User's Query**: Always address the user's specific question directly and immediately.
-3. **Analytical Depth on Demand**: Provide deep insights, causal explanations, and "Executive Summaries" when the user asks for analysis, or when providing significant new findings.
-4. **Authoritative yet Approachable**: You are a senior partner, not a robot. Use "I" and "we" naturally.
+1. **Conversational Intelligence**: Respond naturally. If the user says "Hello", be polite and brief. If the user presents a dataset, immediately switch to "Deep Analytical Mode".
+2. **Prioritize Query Over Stats**: Always address the user's specific question directly and immediately.
+3. **Analytical Depth on Demand**: Provide deep insights, causal explanations, and "Executive Summaries".
+4. **Authoritative & CONFIDENT**: Do not use hedges like "it seems" or "perhaps". State findings based on the mathematical reality of the data.
 
 ---
 
 ## DATASET CONTEXT
-- Columns: ${headers}
-- Total Rows: ${data.length}
+- **Columns**: ${headers}
+- **Total Rows**: ${data.length}
 
-### Numerical Stats
+### 🔢 NUMERICAL STATISTICS (Drill Down)
 ${statsContext}
 
-### Categorical Distributions
+### 🗂️ CATEGORICAL DISTRIBUTIONS (Segments)
 ${categoryContext}
 
-### Automated Insights (Correlations/Outliers)
+### 🔍 AUTOMATED INSIGHTS (Correlations & Anomalies)
 ${autoInsightsContext}
 
-### Data Sample (First 3 rows)
+### 📄 DATA SAMPLE (Representational)
 ${sample}
 
 ---
 
-## RESPONSE CAPABILITIES
+## YOUR CORE CAPABILITIES (How to handle data)
 
-### 📊 VISUALIZATION (CHART_CONFIG)
-When a chart would help answer the user's question, include a JSON configuration in your response.
-Format it exactly like this:
-CHART_CONFIG:
-{
-  "type": "line | bar | pie | area",
-  "xKey": "column_name",
-  "yKeys": ["metric1"],
-  "title": "Clear Descriptive Title",
-  "description": "Briefly explain what this chart reveals."
-}
+1. ### **💎 EXECUTIVE ANALYTICAL STRUCTURE**:
+   - **The Big Picture**: Start with a high-level "Executive Summary" (2-3 sentences). What is the primary story the data is telling?
+   - **Deep Drill-Down**: Identify 3-5 critical anomalies or key drivers. Use **bolding** for all metrics and dates.
+   - **Causal Reasoning**: Don't just list what happened; explain **WHY**. (e.g., "The 20% spike in Friday sales is directly driven by the 'Weekend Promo' category.")
+   - **Strategic Alpha**: Provide 2-3 specific "Next Steps" or business pivots based on this data.
 
-*Note: For trends, recommend the user toggle the "AI Forecast" button.*
+2. ### **🚀 PROACTIVE INTELLIGENCE**:
+   Always end with 3 distinct "Deep Dive" questions that push the user to explore the data further:
+   - 1 Forecast-related question (e.g., "What happens to our profit if this growth trend continues for 3 more months?")
+   - 1 Segment-related question (e.g., "Which specific region is dragging down our overall average?")
+   - 1 Dynamic 'What-if' scenario.
 
-### 🚀 PROACTIVE GUIDANCE
-If the conversation stalls or after a long analysis, suggest 2-3 specific "Deep Dive" questions or "What-if" scenarios that would be valuable for this specific dataset.
+3. ### **⚠️ ANOMALY & OUTLIER DETECTION**:
+   If there are outliers or significant shifts, point them out with precision. Mention which column and what the values are.
 
 ---
 
@@ -168,7 +161,8 @@ If the conversation stalls or after a long analysis, suggest 2-3 specific "Deep 
 - Use **bolding** for metrics, dates, and column names.
 - Use markdown for structure (tables, lists).
 - Explain **WHY** something is happening whenever possible (causality).
-- If the data suggests a trend, mention what the **AI Forecast** might show.
+- If the data suggests a trend, mention what the **AI Forecast** might show if they toggle it on the charts.
+- **DO NOT GENERATE JSON CONFIGS OR CHART_CONFIG**. Your job is to provide the deep thinking and explanation, not to control the UI.
 `;
 
         const apiHistory = newHistory
@@ -178,7 +172,7 @@ If the conversation stalls or after a long analysis, suggest 2-3 specific "Deep 
                 parts: [{ text: m.content }]
             }));
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -199,33 +193,12 @@ If the conversation stalls or after a long analysis, suggest 2-3 specific "Deep 
 
         let reply = json.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
         
-        // Handle Chart Config (Handle both bold and non-bold versions)
-        if (reply.includes("CHART_CONFIG:")) {
-            const isBold = reply.includes("**CHART_CONFIG:**");
-            const tag = isBold ? "**CHART_CONFIG:**" : "CHART_CONFIG:";
-            const parts = reply.split(tag);
-            const textPart = parts[0].trim();
-            const rawConfig = parts[1].trim();
-            // Extract JSON even if wrapped in markdown code blocks or trailing text
-            const jsonPart = rawConfig.replace(/```json|```/g, "").trim();
-            const jsonMatch = jsonPart.match(/\{[\s\S]*\}/);
-            const cleanJson = jsonMatch ? jsonMatch[0] : jsonPart;
-            
-            try {
-                const config = JSON.parse(cleanJson);
-                if (onChartConfig) onChartConfig(config);
-                reply = textPart || "I've generated a new visualization for you!";
-            } catch (e) {
-                console.error("BrutViz AI: Failed to parse chart config", e, "Raw data:", cleanJson);
-            }
-        }
-
         setMessages(prev => [...prev, { role: "assistant", content: reply }]);
 
     } catch (err: any) {
         let errorMessage = `Error: ${err.message}`;
         if (err.message?.toLowerCase().includes("quota") || err.message?.includes("429")) {
-            errorMessage = "Oh ohh! The API key quota has been exceeded. Soon this will be fixed! Please try again in 30-60 seconds. \n\nYou can contact the developer at msamyog37@gmail.com or visit the portfolio at samyogm.com.np";
+            errorMessage = "Oh No! The API key quota has been exceeded. Soon this will be fixed! Please try again in 3-6 hours. \n\nYou can contact the developer at msamyog37@gmail.com or visit the portfolio at samyogm.com.np";
         }
         setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
@@ -274,38 +247,60 @@ If the conversation stalls or after a long analysis, suggest 2-3 specific "Deep 
                         ) : (
                             <>
                                 {messages.map((m, i) => (
-                                    <div key={i} className={cn("flex gap-2", m.role === "user" ? "justify-end" : "justify-start")}>
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        key={i} 
+                                        className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}
+                                    >
                                         {m.role === "assistant" && (
-                                            <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
-                                                <Bot className="w-4 h-4" />
+                                            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
+                                                <Bot className="w-6 h-6" />
                                             </div>
                                         )}
                                         <div className={cn(
-                                            "max-w-[80%] p-3 text-sm font-bold rounded-xl border-2 border-black shadow-neo-sm whitespace-pre-wrap",
+                                            "max-w-[85%] p-4 text-sm font-bold rounded-2xl border-4 border-black shadow-neo-sm whitespace-pre-wrap relative overflow-hidden",
                                             m.role === "user" ? "bg-black text-white" : "bg-white text-black"
                                         )}>
+                                            {m.role === "assistant" && (
+                                                <div className="absolute top-0 right-0 w-16 h-16 bg-primary opacity-[0.03] rounded-full -mr-8 -mt-8" />
+                                            )}
                                             {m.role === "assistant" ? m.content.split(/(\*\*.*?\*\*|###.*?\n|###.*?$)/g).map((part, i) => {
                                                 if (part.startsWith("**") && part.endsWith("**")) {
-                                                    return <strong key={i} className="font-black underline decoration-primary/30 decoration-2 underline-offset-2">{part.slice(2, -2)}</strong>;
+                                                    return <strong key={i} className="font-black underline decoration-primary/30 decoration-4 underline-offset-2">{part.slice(2, -2)}</strong>;
                                                 }
                                                 if (part.startsWith("###")) {
                                                     const cleanHeader = part.replace(/^###\s*/, "").trim();
-                                                    return <strong key={i} className="block text-base font-black mt-2 mb-1 text-primary">{cleanHeader}</strong>;
+                                                    return <strong key={i} className="block text-lg font-black mt-4 mb-2 text-primary tracking-tight">{cleanHeader}</strong>;
                                                 }
                                                 return part;
                                             }) : m.content}
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                                 {isLoading && (
-                                    <div className="flex gap-2">
-                                         <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
-                                            <Bot className="w-4 h-4" />
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="flex gap-3"
+                                    >
+                                         <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
+                                            <Bot className="w-6 h-6 animate-pulse" />
                                          </div>
-                                         <div className="bg-white p-3 rounded-xl border-2 border-black shadow-neo-sm">
-                                            <Loader2 className="w-4 h-4 animate-spin text-black" />
+                                         <div className="bg-white px-4 py-3 rounded-2xl border-4 border-black shadow-neo-sm flex items-center gap-2">
+                                            <div className="flex gap-1">
+                                                {[0, 1, 2].map((dot) => (
+                                                    <motion.div
+                                                        key={dot}
+                                                        animate={{ y: [0, -5, 0] }}
+                                                        transition={{ repeat: Infinity, duration: 0.6, delay: dot * 0.1 }}
+                                                        className="w-1.5 h-1.5 rounded-full bg-black"
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Searching your data...</span>
                                          </div>
-                                    </div>
+                                    </motion.div>
                                 )}
                             </>
                         )}

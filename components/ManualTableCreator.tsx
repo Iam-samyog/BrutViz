@@ -113,7 +113,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="border-b-4 border-black bg-black/5">
+                            <tr className="border-b-4 border-black bg-primary text-white">
                                 {headers.map((header, i) => (
                                 <th key={i} className="p-2 sm:p-4 border-r-2 sm:border-r-4 border-black min-w-[120px] sm:min-w-[180px]">
                                         <div className="flex items-center gap-2 group">
@@ -121,7 +121,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                                                 type="text" 
                                                 value={header}
                                                 onChange={(e) => updateHeader(i, e.target.value)}
-                                                className="flex-1 bg-transparent font-black uppercase italic outline-none focus:text-primary transition-colors text-xs sm:text-sm"
+                                                className="flex-1 bg-transparent font-black uppercase italic outline-none focus:text-white transition-colors text-xs sm:text-sm placeholder-white/60"
                                             />
                                             <button 
                                                 onClick={() => removeColumn(i)}
@@ -150,7 +150,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                                         key={rowIndex}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="border-b-4 border-black last:border-b-0 hover:bg-primary/5 transition-colors"
+                                        className="border-b-4 border-black last:border-b-0 bg-blue-50 hover:bg-primary/10 transition-colors"
                                     >
                                         {headers.map((header, colIndex) => (
                                         <td key={colIndex} className="p-1 sm:p-2 border-r-2 sm:border-r-4 border-black">

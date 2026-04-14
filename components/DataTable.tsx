@@ -18,7 +18,7 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const [editingCell, setEditingCell] = useState<{rowIndex: number, colKey: string} | null>(null);
   
   // We'll reimplement the update logic.
@@ -107,41 +107,55 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
         </div>
       )}
 
-      <div className="rounded-xl border-2 border-black overflow-hidden bg-white shadow-neo">
+      <div className="rounded-2xl border-4 border-black overflow-hidden bg-white shadow-neo transition-all">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
-          <table className="w-full text-sm font-medium min-w-[600px] md:min-w-full">
-            <thead className="bg-primary text-white border-b-2 border-black">
+          <table className="w-full text-sm font-medium min-w-[600px] md:min-w-full border-collapse">
+            <thead className="bg-primary border-b-4 border-black sticky top-0 z-10 text-white">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col}
-                    className="h-12 px-4 text-left font-bold cursor-pointer hover:bg-black/10 transition-colors select-none whitespace-nowrap"
+                    className="h-14 px-6 text-left font-black cursor-pointer hover:bg-black/5 transition-all select-none border-r-2 border-black/10 last:border-r-0"
                     onClick={() => requestSort(col)}
                   >
-                    <div className="flex items-center gap-2 text-black">
+                    <div className="flex items-center justify-between gap-2 text-white uppercase tracking-widest text-[10px]">
                       {col}
-                      {sortConfig?.key === col && (
-                        sortConfig.direction === "ascending" ? <ArrowUpDown className="w-4 h-4" /> : <ArrowUpDown className="w-4 h-4 rotate-180" />
-                      )}
+                      <div className={cn(
+                        "p-1 rounded-md border-2 border-black shadow-neo-sm transition-all",
+                        sortConfig?.key === col ? "bg-primary text-white" : "bg-white text-black/20"
+                      )}>
+                        {sortConfig?.key === col ? (
+                          sortConfig.direction === "ascending" ? <ArrowUpDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3 rotate-180" />
+                        ) : <ArrowUpDown className="w-3 h-3" />}
+                      </div>
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-black/10">
+            <tbody className="divide-y-2 divide-black/5">
               {paginatedData.map((row, i) => (
-                <tr key={i} className="hover:bg-primary/5 transition-colors group">
+                <motion.tr 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  key={i} 
+                  className={cn(
+                    "hover:bg-primary/10 transition-colors group",
+                    i % 2 === 0 ? "bg-blue-50" : "bg-blue-100/30"
+                  )}
+                >
                   {columns.map((col) => (
-                    <td key={col} className="p-0 relative border-r-2 border-black/10 last:border-r-0">
+                    <td key={col} className="p-0 relative border-r-2 border-black/5 last:border-r-0">
                         <input 
-                            className="w-full h-full px-4 py-3 bg-transparent border-none focus:ring-inset focus:ring-2 focus:ring-primary outline-none transition-all truncate font-medium group-hover:bg-white/50"
+                            className="w-full h-full px-6 py-4 bg-transparent border-none focus:ring-inset focus:ring-4 focus:ring-primary/20 outline-none transition-all truncate font-bold group-hover:bg-white/30"
                             value={row[col] ?? ""}
                             readOnly={showAll}
                             onChange={(e) => handleCellUpdate(i, col, e.target.value)}
                         />
                     </td>
                   ))}
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

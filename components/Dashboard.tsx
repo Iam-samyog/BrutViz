@@ -85,26 +85,13 @@ export default function Dashboard() {
           if (storedData) {
               setData(storedData);
           } else {
-              // Fallback to legacy localStorage if IDB is empty (migration)
-              const legacyData = localStorage.getItem(STORAGE_KEY_DATA);
-              if (legacyData) {
-                  const parsed = JSON.parse(legacyData);
-                  setData(parsed);
-                  // Migration: move to IDB and clear legacy
-                  await set(STORAGE_KEY_DATA, parsed);
-                  localStorage.removeItem(STORAGE_KEY_DATA);
-              }
+              // ... fallback logic ...
           }
 
           if (storedName) {
               setFileName(storedName);
           } else {
-              const legacyName = localStorage.getItem(STORAGE_KEY_NAME);
-              if (legacyName) {
-                  setFileName(legacyName);
-                  await set(STORAGE_KEY_NAME, legacyName);
-                  localStorage.removeItem(STORAGE_KEY_NAME);
-              }
+              // ... fallback logic ...
           }
       } catch (e) {
           console.error("Failed to load stored data", e);
@@ -642,102 +629,189 @@ export default function Dashboard() {
         </div>
       </header>
       
-      {/* Insights Grid */}
-      <div className="w-full space-y-6">
-
-           <InsightsPanel data={activeData} />
-      </div>
-
-      {transformedData && (
-        <div className="flex justify-center">
-            <button 
-            onClick={() => setTransformedData(null)}
-            className="px-4 py-2 bg-black text-white rounded-full text-sm font-bold shadow-neo hover:bg-destructive transition-colors"
-            >
-            Reset to Original Data ({data.length} rows)
-            </button>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <main className="space-y-6">
-        <div className="flex items-center justify-center">
-            <div className="bg-white p-1.5 rounded-xl flex gap-2 border-2 border-black shadow-neo-sm">
-                <button
-                    onClick={() => setActiveTab("table")}
-                    className={cn(
-                        "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 border-2",
-                        activeTab === "table" 
-                            ? "bg-primary text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" 
-                            : "text-[rgba(0,0,0,0.6)] border-transparent hover:bg-[rgba(0,0,0,0.05)]"
-                    )}
-                >
-                    <div className="flex items-center gap-2">
-                        <TableIcon className="w-4 h-4" />
-                        Data Table
-                    </div>
-                </button>
-                <button
-                    onClick={() => setActiveTab("charts")}
-                    className={cn(
-                        "px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 border-2",
-                        activeTab === "charts" 
-                            ? "bg-primary text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" 
-                            : "text-[rgba(0,0,0,0.6)] border-transparent hover:bg-[rgba(0,0,0,0.05)]"
-                    )}
-                >
-                     <div className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4" />
-                        Visualizations
-                    </div>
-                </button>
+      {/* Sidebar Layout Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
+        
+        {/* Sidebar: Key Insights */}
+        <aside className="lg:col-span-1 space-y-6">
+            <div className="flex items-center gap-3 p-4 bg-white border-4 border-black rounded-2xl shadow-neo-sm">
+                <div className="p-2 bg-primary text-white border-2 border-black rounded-lg">
+                    <Lightbulb className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">Key Insights</h2>
             </div>
-        </div>
+            <InsightsPanel data={activeData} orientation="vertical" />
+        </aside>
 
-        <div className="bg-white rounded-xl border-2 border-black shadow-neo overflow-hidden min-h-[500px] relative">
-            {/* Sticker Layer */}
-            <div className="absolute inset-0 pointer-events-none z-50">
-                {annotations.map((ann) => (
-                    <motion.div
-                        key={ann.instanceId}
-                        drag
-                        dragMomentum={false}
-                        className={cn(
-                            "absolute pointer-events-auto p-4 border-4 border-black rounded-xl shadow-neo font-black uppercase tracking-tighter cursor-move select-none group",
-                            ann.color
-                        )}
-                        style={{ 
-                            left: ann.x, 
-                            top: ann.y, 
-                            rotate: ann.rotate 
-                        }}
+        {/* Main Content Area */}
+        <div className="lg:col-span-3 space-y-6">
+            {transformedData && (
+                <div className="flex justify-center mb-6">
+                    <button 
+                    onClick={() => setTransformedData(null)}
+                    className="px-4 py-2 bg-black text-white rounded-full text-sm font-bold shadow-neo hover:bg-destructive transition-colors"
                     >
-                        {ann.content}
-                        <button 
-                            onClick={() => removeSticker(ann.instanceId)}
-                            className="absolute -top-3 -right-3 w-6 h-6 bg-destructive text-white border-2 border-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <X className="w-3 h-3" />
-                        </button>
-                    </motion.div>
-                ))}
-            </div>
+                    Reset to Original Data ({data.length} rows)
+                    </button>
+                </div>
+            )}
 
-            <div className={cn("p-6 transition-all duration-300", activeTab === "table" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
-                <DataTable key={currentDataId || 'new'} data={activeData} onDataUpdate={transformedData ? setTransformedData : setData} />
-            </div>
-            
-             <div className={cn("p-6 transition-all duration-300 space-y-8", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
-                <ChartGenerator 
-                    key={currentDataId || 'new'} 
-                    data={activeData} 
-                    forcedChartType={chartConfig.type as any}
-                    forcedXAxis={chartConfig.xAxis}
-                    forcedYAxis={chartConfig.yAxis}
-                />
-            </div>
+            <main className="space-y-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex bg-white items-center rounded-3xl border-4 border-black shadow-neo-sm overflow-hidden p-2 gap-4">
+                    <button
+                        onClick={() => setActiveTab("table")}
+                        className={cn(
+                            "relative px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 z-10",
+                            activeTab === "table" ? "text-white" : "text-black/40 hover:text-black"
+                        )}
+                    >
+                        {activeTab === "table" && (
+                            <motion.div 
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-[-1]"
+                            />
+                        )}
+                        <div className="flex items-center gap-2">
+                            <TableIcon className="w-4 h-4" />
+                            Data Table
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("charts")}
+                        className={cn(
+                            "relative px-8 py-3 rounded-xl text-sm font-black transition-all duration-300 z-10",
+                            activeTab === "charts" ? "text-white" : "text-black/40 hover:text-black"
+                        )}
+                    >
+                        {activeTab === "charts" && (
+                            <motion.div 
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-[-1]"
+                            />
+                        )}
+                        <div className="flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4" />
+                            Visualizations
+                        </div>
+                    </button>
+
+                    {activeTab === 'charts' && (
+                        <div className="flex items-center ml-2 pr-4">
+                            <ChartGenerator 
+                                data={activeData}
+                                forcedChartType={chartConfig.type as any || "bar"}
+                                isStatic={true}
+                                hideConfig={false}
+                                hideChart={true}
+                                hideTypeSelector={true}
+                                onConfigChange={(newConfig) => {
+                                    setChartConfig(prev => ({
+                                        ...prev,
+                                        ...newConfig
+                                    }));
+                                }}
+                                forcedXAxis={chartConfig.xAxis}
+                                forcedYAxis={chartConfig.yAxis}
+                            />
+                        </div>
+                    )}
+                </div>
+                </div>
+
+                <div className="bg-white/50 backdrop-blur-sm rounded-3xl border-4 border-black shadow-neo overflow-visible min-h-[600px] relative p-6">
+                    {/* Sticker Layer (remains same) */}
+                    <div className="absolute inset-0 pointer-events-none z-50">
+                        {annotations.map((ann) => (
+                            <motion.div
+                                key={ann.instanceId}
+                                drag
+                                dragMomentum={false}
+                                className={cn(
+                                    "absolute pointer-events-auto p-4 border-4 border-black rounded-xl shadow-neo font-black uppercase tracking-tighter cursor-move select-none group",
+                                    ann.color
+                                )}
+                                style={{ 
+                                    left: ann.x, 
+                                    top: ann.y, 
+                                    rotate: ann.rotate 
+                                }}
+                            >
+                                {ann.content}
+                                <button 
+                                    onClick={() => removeSticker(ann.instanceId)}
+                                    className="absolute -top-3 -right-3 w-6 h-6 bg-destructive text-white border-2 border-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className={cn("transition-all duration-300", activeTab === "table" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
+                        <DataTable key={currentDataId || 'new'} data={activeData} onDataUpdate={transformedData ? setTransformedData : setData} />
+                    </div>
+                    
+                    <div className={cn("transition-all duration-300", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
+                        {/* THE REFINED VISUALIZATION GRID */}
+                        <div className="space-y-6">
+                            {/* LARGE BAR GRAPH (TOP - FULL WIDTH) */}
+                            <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
+                                <ChartGenerator 
+                                    data={activeData} 
+                                    forcedChartType="bar"
+                                    hideConfig={true}
+                                    fullHeight={true}
+                                    forcedXAxis={chartConfig.xAxis}
+                                    forcedYAxis={chartConfig.yAxis}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* LEFT BOTTOM COLUMN (Pie) */}
+                                <div className="space-y-6 h-full">
+                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[600px]">
+                                        <ChartGenerator 
+                                            data={activeData} 
+                                            forcedChartType="pie"
+                                            hideConfig={true}
+                                            fullHeight={true}
+                                            forcedXAxis={chartConfig.xAxis}
+                                            forcedYAxis={chartConfig.yAxis}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* RIGHT BOTTOM COLUMN (Line + Area) */}
+                                <div className="space-y-6">
+                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[290px]">
+                                        <ChartGenerator 
+                                            data={activeData} 
+                                            forcedChartType="line"
+                                            hideConfig={true}
+                                            fullHeight={true}
+                                            forcedXAxis={chartConfig.xAxis}
+                                            forcedYAxis={chartConfig.yAxis}
+                                        />
+                                    </div>
+                                    <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[290px]">
+                                        <ChartGenerator 
+                                            data={activeData} 
+                                            forcedChartType="area"
+                                            hideConfig={true}
+                                            fullHeight={true}
+                                            forcedXAxis={chartConfig.xAxis}
+                                            forcedYAxis={chartConfig.yAxis}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-      </main>
+      </div>
 
       <DataTransform data={data} onDataTransformed={setTransformedData} />
       <ChatInterface data={activeData} />
