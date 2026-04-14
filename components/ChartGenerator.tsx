@@ -18,7 +18,11 @@ import {
   AreaChart,
   Area,
   ComposedChart,
-  Sankey,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -28,7 +32,7 @@ import { generateForecast } from "@/lib/insights";
 interface ChartGeneratorProps {
   data: any[];
   isStatic?: boolean;
-  forcedChartType?: "bar" | "line" | "area" | "pie" | "sankey" | "kp";
+  forcedChartType?: "bar" | "line" | "area" | "pie" | "radar" | "kp";
   forcedXAxis?: string;
   forcedYAxis?: string;
   forcedShowForecast?: boolean;
@@ -37,9 +41,11 @@ interface ChartGeneratorProps {
   hideTypeSelector?: boolean;
   fullHeight?: boolean;
   onConfigChange?: (config: { type?: string, xAxis?: string, yAxis?: string, showForecast?: boolean }) => void;
+  colorPalette?: string[];
+  darkMode?: boolean;
 }
 
-const COLORS = [
+const DEFAULT_COLORS = [
   "#3B82F6", // Blue 500
   "#8B5CF6", // Violet 500
   "#EC4899", // Pink 500
@@ -59,7 +65,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <div key={index} className="flex items-center gap-3">
               <div 
                 className="w-3 h-3 rounded-full border-2 border-black" 
-                style={{ backgroundColor: entry.color || entry.fill || COLORS[index % COLORS.length] }} 
+                style={{ backgroundColor: entry.color || entry.fill || DEFAULT_COLORS[index % DEFAULT_COLORS.length] }} 
               />
               <span className="text-xs font-black text-black">
                 {entry.name}: <span className="text-primary">{entry.value.toLocaleString()}</span>
@@ -87,8 +93,17 @@ export default function ChartGenerator({
   hideChart = false,
   hideTypeSelector = false,
   fullHeight = false,
-  onConfigChange
+  onConfigChange,
+  colorPalette,
+  darkMode = false,
 }: ChartGeneratorProps) {
+  // Resolve the active color palette — custom override or default
+  const COLORS = colorPalette && colorPalette.length > 0 ? colorPalette : DEFAULT_COLORS;
+  // Tick and grid styles based on dark/light mode
+  const tickStyle = darkMode
+    ? { fontSize: 11, fontWeight: 700, fill: '#fff', opacity: 0.5 }
+    : { fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 };
+  const gridStroke = darkMode ? '#ffffff' : '#000000';
   const [chartTypeState, setChartType] = useState<"bar" | "line" | "area" | "pie">("bar");
   const chartType = forcedChartType || chartTypeState; // Override if forced
 
@@ -166,32 +181,8 @@ export default function ChartGenerator({
   }, [chartData, showForecast, xAxisKey, yAxisKeys]);
 
   // Build Sankey data from first two categorical columns
-  const sankeyData = useMemo(() => {
-    if (categoricalKeys.length < 2 || !data.length) return null;
-    const sourceKey = categoricalKeys[0];
-    const targetKey = categoricalKeys[1];
-    const valueKey = numericKeys[0];
-    const nodeNames = Array.from(new Set([
-      ...data.map(r => String(r[sourceKey])),
-      ...data.map(r => String(r[targetKey])),
-    ]));
-    const nodeMap = new Map(nodeNames.map((n, i) => [n, i]));
-    const linkMap = new Map<string, number>();
-    data.forEach(row => {
-      const s = String(row[sourceKey]);
-      const t = String(row[targetKey]);
-      const key = `${s}__${t}`;
-      const v = Number(row[valueKey]) || 1;
-      linkMap.set(key, (linkMap.get(key) || 0) + v);
-    });
-    const links = Array.from(linkMap.entries()).map(([key, value]) => {
-      const [s, t] = key.split('__');
-      return { source: nodeMap.get(s)!, target: nodeMap.get(t)!, value };
-    }).filter(l => l.source !== l.target && l.value > 0);
-    return { nodes: nodeNames.map(name => ({ name })), links };
-  }, [data, categoricalKeys, numericKeys]);
 
-  if (numericKeys.length === 0 && chartType !== 'sankey') {
+  if (numericKeys.length === 0 && chartType !== 'radar') {
     return (
       <div className="p-8 border rounded-xl border-dashed flex flex-col items-center justify-center text-muted-foreground gap-2">
         <AlertCircle className="w-6 h-6" />
@@ -202,42 +193,51 @@ export default function ChartGenerator({
 
   const renderChart = () => {
     switch (chartType) {
-      case "sankey": {
-        if (!sankeyData || sankeyData.nodes.length === 0 || sankeyData.links.length === 0) {
-          return (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-black/40">
-              <AlertCircle className="w-8 h-8" />
-              <p className="text-sm font-black uppercase tracking-tight">Need 2+ text columns for flow</p>
-            </div>
-          );
-        }
+      case "radar": {
+        // Pentagon/Spider-web Radar chart using all numeric keys
+        // Reshape data: one row per numeric key with values per category
+        const radarKeys = numericKeys.slice(0, 6); // cap at 6 axes for clarity
+        const radarData = radarKeys.map(key => {
+          const entry: any = { subject: key };
+          // Aggregate per category for radar
+          const grouped = new Map<string, number>();
+          chartData.forEach(row => {
+            const cat = String(row[xAxisKey] ?? '');
+            grouped.set(cat, (grouped.get(cat) || 0) + (Number(row[key]) || 0));
+          });
+          grouped.forEach((v, cat) => { entry[cat] = v; });
+          return entry;
+        });
+        const radarCategories = Array.from(new Set(chartData.map(r => String(r[xAxisKey] ?? ''))));
         return (
-          <Sankey
-            width={500}
-            height={400}
-            data={sankeyData}
-            nodeWidth={12}
-            nodePadding={24}
-            linkCurvature={0.5}
-            iterations={32}
-            node={{ fill: '#3B82F6', stroke: '#000', strokeWidth: 2 }}
-            link={{ stroke: '#3B82F6', strokeOpacity: 0.25 }}
-          >
-            <Tooltip
-              content={({ active, payload }: any) => {
-                if (!active || !payload?.length) return null;
-                const d = payload[0]?.payload;
-                const label = d?.name || `${d?.source?.name} → ${d?.target?.name}`;
-                const value = d?.value;
-                return (
-                  <div className="bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl text-xs font-black">
-                    <p className="text-black/40 uppercase tracking-widest mb-1">{label}</p>
-                    {value !== undefined && <p className="text-primary">{Number(value).toLocaleString()}</p>}
-                  </div>
-                );
-              }}
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+            <PolarGrid stroke="#000" opacity={0.08} />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fontSize: 10, fontWeight: 900, fill: '#000', opacity: 0.6 }}
             />
-          </Sankey>
+            <PolarRadiusAxis
+              tick={{ fontSize: 9, fontWeight: 700, fill: '#000', opacity: 0.3 }}
+              axisLine={false}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            {radarCategories.slice(0, 5).map((cat, i) => (
+              <Radar
+                key={cat}
+                name={cat}
+                dataKey={cat}
+                stroke={COLORS[i % COLORS.length]}
+                fill={COLORS[i % COLORS.length]}
+                fillOpacity={0.15}
+                strokeWidth={2}
+                isAnimationActive={!isStatic}
+              />
+            ))}
+            <Legend
+              iconType="circle"
+              wrapperStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+            />
+          </RadarChart>
         );
       }
 
@@ -412,10 +412,11 @@ export default function ChartGenerator({
                nameKey={xAxisKey}
                cx="50%"
                cy="50%"
-               innerRadius={70}
-               outerRadius={100}
+               innerRadius={45}
+               outerRadius={72}
                paddingAngle={5}
                label={({ name, percent }) => (percent !== undefined && percent > 0.05) ? `${name} (${(percent * 100).toFixed(0)}%)` : ''}
+               labelLine={{ length: 10, length2: 8 }}
                isAnimationActive={!isStatic}
              >
                {aggregatedData.map((entry, index) => (

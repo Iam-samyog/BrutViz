@@ -722,7 +722,7 @@ export default function Dashboard() {
                 </div>
                 </div>
 
-                <div className="bg-white/50 backdrop-blur-sm rounded-3xl border-4 border-black shadow-neo overflow-visible min-h-[600px] relative p-6">
+                <div className="relative min-h-[600px]">
                     {/* Sticker Layer (remains same) */}
                     <div className="absolute inset-0 pointer-events-none z-50">
                         {annotations.map((ann) => (
@@ -758,8 +758,9 @@ export default function Dashboard() {
                     <div className={cn("transition-all duration-300", activeTab === "charts" ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none")}>
                         {/* THE REFINED VISUALIZATION GRID */}
                         <div className="space-y-6">
-                            {/* LARGE BAR GRAPH (TOP - FULL WIDTH) */}
-                            <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
+
+                            {/* BAR CHART — Indigo tint */}
+                            <div className="w-full bg-indigo-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
                                 <ChartGenerator 
                                     data={activeData} 
                                     forcedChartType="bar"
@@ -768,13 +769,14 @@ export default function Dashboard() {
                                     forcedXAxis={chartConfig.xAxis}
                                     forcedYAxis={chartConfig.yAxis}
                                     forcedShowForecast={chartConfig.showForecast}
+                                    colorPalette={['#3388ff', '#a855f7', '#f6d743', '#4ade80', '#ff4911']}
                                 />
                             </div>
 
-                            {/* SECOND ROW: Pie + Sankey + KP (3 columns) */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                {/* Pie Chart */}
-                                <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
+                            {/* SECOND ROW: Pie + Pentagon (2 columns) */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Pie Chart — Rose tint */}
+                                <div className="bg-rose-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px]">
                                     <ChartGenerator 
                                         data={activeData} 
                                         forcedChartType="pie"
@@ -783,57 +785,34 @@ export default function Dashboard() {
                                         forcedXAxis={chartConfig.xAxis}
                                         forcedYAxis={chartConfig.yAxis}
                                         forcedShowForecast={chartConfig.showForecast}
+                                        colorPalette={['#ff9bc5', '#3388ff', '#f6d743', '#ff4911', '#4ade80', '#a855f7', '#ffffff']}
                                     />
                                 </div>
 
-                                {/* Sankey Flow Chart */}
-                                <div className="bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px] flex flex-col">
+                                {/* Pentagon Radar Chart — Violet tint */}
+                                <div className="bg-violet-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px] flex flex-col">
                                     <div className="px-5 pt-4 pb-2 border-b-2 border-black/5 flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Flow</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-black">Sankey</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Multi-Axis</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-black">Pentagon</span>
                                     </div>
                                     <div className="flex-1 min-h-0">
                                         <ChartGenerator 
                                             data={activeData} 
-                                            forcedChartType="sankey"
+                                            forcedChartType="radar"
                                             hideConfig={true}
                                             fullHeight={true}
                                             forcedXAxis={chartConfig.xAxis}
                                             forcedYAxis={chartConfig.yAxis}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* PUBG Mobile KP Graph */}
-                                <div className="bg-[#0d0d1a] border-4 border-[#F5C518] rounded-3xl shadow-[6px_6px_0px_0px_#F5C518] overflow-hidden h-[500px] flex flex-col">
-                                    <div className="px-5 pt-4 pb-2 border-b-2 border-[#F5C518]/20 flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#F5C518]/60">Esports</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-[#F5C518]">KP Graph</span>
-                                        <span className="ml-auto text-[9px] font-black uppercase tracking-widest text-[#F5C518]/40 bg-[#F5C518]/10 px-2 py-0.5 rounded-full">PUBG Mobile</span>
-                                    </div>
-                                    <div className="flex-1 min-h-0">
-                                        <ChartGenerator 
-                                            data={activeData} 
-                                            forcedChartType="kp"
-                                            hideConfig={true}
-                                            fullHeight={true}
-                                            forcedXAxis={chartConfig.xAxis}
-                                            forcedYAxis={chartConfig.yAxis}
+                                            colorPalette={['#a855f7', '#ff4911', '#3388ff', '#f6d743', '#4ade80']}
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* AI FORECAST ROW — Full-width Line + Area */}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3 px-1">
-                                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                        <span className="text-[10px] font-black uppercase tracking-widest">✦ AI Forecast Analysis</span>
-                                    </div>
-                                    <div className="flex-1 h-px bg-black/10" />
-                                </div>
-                                {/* Full-width Line chart with forecast */}
-                                <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
+                            <div className="space-y-6">
+                                {/* Line chart — Sky blue tint */}
+                                <div className="w-full bg-sky-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
                                     <ChartGenerator 
                                         data={activeData} 
                                         forcedChartType="line"
@@ -841,11 +820,12 @@ export default function Dashboard() {
                                         fullHeight={true}
                                         forcedXAxis={chartConfig.xAxis}
                                         forcedYAxis={chartConfig.yAxis}
-                                        forcedShowForecast={true}
+                                        forcedShowForecast={chartConfig.showForecast}
+                                        colorPalette={['#a855f7', '#3388ff', '#ff4911', '#4ade80', '#f6d743']}
                                     />
                                 </div>
-                                {/* Full-width Area chart with forecast */}
-                                <div className="w-full bg-white border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
+                                {/* Area chart — Emerald tint */}
+                                <div className="w-full bg-emerald-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[450px]">
                                     <ChartGenerator 
                                         data={activeData} 
                                         forcedChartType="area"
@@ -853,7 +833,8 @@ export default function Dashboard() {
                                         fullHeight={true}
                                         forcedXAxis={chartConfig.xAxis}
                                         forcedYAxis={chartConfig.yAxis}
-                                        forcedShowForecast={true}
+                                        forcedShowForecast={chartConfig.showForecast}
+                                        colorPalette={['#f6d743', '#ff4911', '#3388ff', '#a855f7', '#4ade80']}
                                     />
                                 </div>
                             </div>
