@@ -1,4 +1,4 @@
-# 🖼️ BrutViz
+#  BrutViz
 
 **BrutViz** is a high-performance, **Neo-Brutalist** data visualization and analysis platform powered by **Gemini AI**. It transforms raw datasets into beautiful, actionable insights with a focus on speed, clarity, and bold design.
 
