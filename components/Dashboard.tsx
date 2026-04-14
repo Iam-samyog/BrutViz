@@ -37,7 +37,9 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"table" | "charts">("table");
   const [transformedData, setTransformedData] = useState<any[] | null>(null);
   const [annotations, setAnnotations] = useState<any[]>([]);
-  const [chartConfig, setChartConfig] = useState<{type?: string, xAxis?: string, yAxis?: string}>({});
+  const [chartConfig, setChartConfig] = useState<{type?: string, xAxis?: string, yAxis?: string, showForecast?: boolean}>({
+      showForecast: false
+  });
   
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -713,6 +715,7 @@ export default function Dashboard() {
                                 }}
                                 forcedXAxis={chartConfig.xAxis}
                                 forcedYAxis={chartConfig.yAxis}
+                                forcedShowForecast={chartConfig.showForecast}
                             />
                         </div>
                     )}

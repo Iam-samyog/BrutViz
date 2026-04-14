@@ -30,11 +30,12 @@ interface ChartGeneratorProps {
   forcedChartType?: "bar" | "line" | "area" | "pie";
   forcedXAxis?: string;
   forcedYAxis?: string;
+  forcedShowForecast?: boolean;
   hideConfig?: boolean;
   hideChart?: boolean;
   hideTypeSelector?: boolean;
   fullHeight?: boolean;
-  onConfigChange?: (config: { type?: string, xAxis?: string, yAxis?: string }) => void;
+  onConfigChange?: (config: { type?: string, xAxis?: string, yAxis?: string, showForecast?: boolean }) => void;
 }
 
 const COLORS = [
@@ -80,6 +81,7 @@ export default function ChartGenerator({
   forcedChartType, 
   forcedXAxis,
   forcedYAxis,
+  forcedShowForecast,
   hideConfig = false, 
   hideChart = false,
   hideTypeSelector = false,
@@ -91,10 +93,11 @@ export default function ChartGenerator({
 
   const [xAxisKeyOverride, setXAxisKey] = useState<string>("");
   const [yAxisKeysOverride, setYAxisKeys] = useState<string[]>([]);
-  const [showForecast, setShowForecast] = useState(false);
+  const [showForecastInternal, setShowForecastInternal] = useState(false);
 
   const xAxisKey = forcedXAxis || xAxisKeyOverride;
   const yAxisKeys = forcedYAxis ? [forcedYAxis] : yAxisKeysOverride;
+  const showForecast = forcedShowForecast !== undefined ? forcedShowForecast : showForecastInternal;
 
   // Analyze data to find potential axes
   const { numericKeys, categoricalKeys } = useMemo(() => {
@@ -303,7 +306,7 @@ export default function ChartGenerator({
         );
       default: // Bar
         return (
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <BarChart data={augmentedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#000" opacity={0.05} />
             <XAxis 
               dataKey={xAxisKey} 
@@ -323,11 +326,21 @@ export default function ChartGenerator({
               <Bar 
                 key={key} 
                 dataKey={key} 
-                fill={COLORS[i % COLORS.length]} 
                 radius={[6, 6, 0, 0]} 
                 isAnimationActive={!isStatic} 
                 barSize={40}
-              />
+              >
+                {augmentedData.map((entry, index) => (
+                    <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[i % COLORS.length]}
+                        fillOpacity={entry.isForecast ? 0.3 : 1}
+                        stroke={entry.isForecast ? COLORS[i % COLORS.length] : "none"}
+                        strokeWidth={2}
+                        strokeDasharray={entry.isForecast ? "4 4" : "0"}
+                    />
+                ))}
+              </Bar>
             ))}
           </BarChart>
         );
@@ -376,6 +389,23 @@ export default function ChartGenerator({
                       <option key={k} value={k}>{k}</option>
                   ))}
                   </select>
+              </div>
+
+              <div className="flex items-center gap-3 pl-4 border-l border-black/10">
+                  <button
+                    onClick={() => {
+                        const newState = !showForecast;
+                        setShowForecastInternal(newState);
+                        onConfigChange?.({ type: chartType, xAxis: xAxisKey, yAxis: yAxisKeys[0], showForecast: newState });
+                    }}
+                    className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-[10px] transition-all",
+                        showForecast ? "bg-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-y-[-1px] border-2 border-black" : "bg-black/5 text-black hover:bg-black/10"
+                    )}
+                  >
+                    <Sparkles className={cn("w-3 h-3", showForecast && "animate-pulse")} />
+                    {showForecast ? "Sync Active" : "AI Forecast"}
+                  </button>
               </div>
           </div>
       )}
