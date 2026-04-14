@@ -38,14 +38,41 @@ interface ChartGeneratorProps {
 }
 
 const COLORS = [
-  "#007AFF", // Apple Blue
-  "#AF52DE", // Apple Purple
-  "#FF2D55", // Apple Pink
-  "#5856D6", // Apple Indigo
-  "#5AC8FA", // Apple Teal
-  "#34C759", // Apple Green
-  "#FF9500", // Apple Orange
+  "#3B82F6", // Blue 500
+  "#8B5CF6", // Violet 500
+  "#EC4899", // Pink 500
+  "#F59E0B", // Amber 500
+  "#10B981", // Emerald 500
+  "#6366F1", // Indigo 500
+  "#EF4444", // Red 500
 ];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl">
+        <p className="font-black text-xs uppercase tracking-widest text-black/40 mb-2 border-b-2 border-black/5 pb-1">{label}</p>
+        <div className="space-y-1.5">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center gap-3">
+              <div 
+                className="w-3 h-3 rounded-full border-2 border-black" 
+                style={{ backgroundColor: entry.color || entry.fill || COLORS[index % COLORS.length] }} 
+              />
+              <span className="text-xs font-black text-black">
+                {entry.name}: <span className="text-primary">{entry.value.toLocaleString()}</span>
+              </span>
+              {entry.payload.isForecast && (
+                <span className="text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full font-black uppercase">AI Predicted</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function ChartGenerator({ 
   data, 
@@ -111,7 +138,6 @@ export default function ChartGenerator({
         const target = numericKeys.find(k => k !== currentXAxis) || numericKeys[0];
         if (target) setYAxisKeys([target]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoricalKeys, numericKeys, forcedChartType, forcedXAxis, forcedYAxis]);
 
   // Ensure data is formatted for Recharts (numbers are actual numbers)
@@ -125,17 +151,14 @@ export default function ChartGenerator({
       });
   }, [data, numericKeys]);
 
-  const { augmentedData, forecastData } = useMemo(() => {
-    if (!showForecast || !xAxisKey || yAxisKeys.length === 0) return { augmentedData: chartData, forecastData: [] };
+  const { augmentedData } = useMemo(() => {
+    if (!showForecast || !xAxisKey || yAxisKeys.length === 0) return { augmentedData: chartData };
     
     // Generate forecast for the first Y axis key
     const forecast = generateForecast(chartData, xAxisKey, yAxisKeys[0], 6);
-    
-    // Combine to ensure continuity
-    const lastRealPoint = chartData[chartData.length - 1];
     const combinedData = [...chartData, ...forecast.map(f => ({ ...f, [xAxisKey]: f[xAxisKey] }))];
     
-    return { augmentedData: combinedData, forecastData: forecast };
+    return { augmentedData: combinedData };
   }, [chartData, showForecast, xAxisKey, yAxisKeys]);
 
   if (numericKeys.length === 0) {
@@ -151,27 +174,36 @@ export default function ChartGenerator({
     switch (chartType) {
       case "area":
         return (
-          <ComposedChart data={augmentedData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-            <XAxis dataKey={xAxisKey} style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <YAxis style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
-                formatter={(value: any, name: string | undefined, props: any) => {
-                  if (typeof value !== 'number') return [value, name || ''];
-                  if (props.payload.isForecast) return [value.toFixed(2), `${name || ''} (Predicted)`];
-                  return [value, name || ''];
-                }}
+          <ComposedChart data={augmentedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#000" opacity={0.05} />
+            <XAxis 
+              dataKey={xAxisKey} 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+              dy={10}
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
             {showForecast && (
               <Area 
                 type="monotone" 
                 stroke="none"
                 fill={COLORS[0]}
-                fillOpacity={0.1}
+                fillOpacity={0.05}
                 connectNulls
-                name="Confidence Interval"
+                name="Confidence Range"
                 data={augmentedData.map(d => ({ ...d, range: d.isForecast ? [d.lowerBound, d.upperBound] : null }))}
                 dataKey="range"
               />
@@ -180,8 +212,8 @@ export default function ChartGenerator({
               type="monotone" 
               dataKey={yAxisKeys[0]} 
               stroke={COLORS[0]} 
-              fill={COLORS[0]} 
-              fillOpacity={0.2} 
+              strokeWidth={4}
+              fill="url(#colorArea)" 
               isAnimationActive={!isStatic} 
               strokeDasharray={showForecast ? "5 5" : "0"}
             />
@@ -189,28 +221,30 @@ export default function ChartGenerator({
         );
       case "line":
         return (
-          <ComposedChart data={augmentedData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-            <XAxis dataKey={xAxisKey} style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <YAxis style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
-                formatter={(value: any, name: string | undefined, props: any) => {
-                  if (typeof value !== 'number') return [value, name || ''];
-                  if (props.payload.isForecast) return [value.toFixed(2), `${name || ''} (Predicted)`];
-                  return [value, name || ''];
-                }}
+          <ComposedChart data={augmentedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#000" opacity={0.05} />
+            <XAxis 
+              dataKey={xAxisKey} 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+              dy={10}
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
             {showForecast && (
               <Area 
                 type="monotone" 
                 stroke="none"
                 fill={COLORS[0]}
-                fillOpacity={0.1}
+                fillOpacity={0.05}
                 connectNulls
-                name="Confidence Interval"
-                // Recharts Range Area trick
+                name="Confidence Range"
                 data={augmentedData.map(d => ({ ...d, range: d.isForecast ? [d.lowerBound, d.upperBound] : null }))}
                 dataKey="range"
               />
@@ -221,27 +255,25 @@ export default function ChartGenerator({
                 type="monotone" 
                 dataKey={key} 
                 stroke={COLORS[i % COLORS.length]} 
-                strokeWidth={3} 
+                strokeWidth={4} 
                 dot={(props: any) => {
-                  if (props?.payload?.isForecast) return <svg></svg>; // Return empty svg node instead of null
-                  return <circle cx={props.cx} cy={props.cy} r={4} fill={COLORS[i % COLORS.length]} strokeWidth={2} stroke="white" />;
+                  if (props?.payload?.isForecast) return <svg></svg>;
+                  return <circle cx={props.cx} cy={props.cy} r={5} fill={COLORS[i % COLORS.length]} strokeWidth={2} stroke="white" />;
                 }}
-                strokeDasharray={showForecast ? "5 5" : "0"} // Can't be a function per-point in Recharts easily without separate series
-                activeDot={{ r: 6 }} 
+                strokeDasharray={showForecast ? "5 5" : "0"}
+                activeDot={{ r: 8, stroke: 'white', strokeWidth: 3 }} 
                 isAnimationActive={!isStatic} 
               />
             ))}
           </ComposedChart>
         );
       case "pie":
-        // Group data for Pie charts to avoid clutter
         const aggregatedData = (() => {
             if (chartData.length <= 8) return chartData;
             const sorted = [...chartData].sort((a, b) => (b[yAxisKeys[0]] || 0) - (a[yAxisKeys[0]] || 0));
             const top = sorted.slice(0, 8);
             const rest = sorted.slice(8);
             const otherValue = rest.reduce((sum, item) => sum + (Number(item[yAxisKeys[0]]) || 0), 0);
-            
             return [
                 ...top,
                 { [xAxisKey]: "Others", [yAxisKeys[0]]: otherValue }
@@ -250,42 +282,52 @@ export default function ChartGenerator({
 
         return (
           <PieChart>
-             <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: '2px solid black', boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)', fontWeight: 'bold' }} 
-             />
-             <Legend verticalAlign="bottom" height={36} />
+             <Tooltip content={<CustomTooltip />} />
              <Pie
                data={aggregatedData}
                dataKey={yAxisKeys[0]}
                nameKey={xAxisKey}
                cx="50%"
                cy="50%"
-               innerRadius={60}
+               innerRadius={70}
                outerRadius={100}
-               paddingAngle={2}
-               fill="#8884d8"
+               paddingAngle={5}
                label={({ name, percent }) => (percent !== undefined && percent > 0.05) ? `${name} (${(percent * 100).toFixed(0)}%)` : ''}
                isAnimationActive={!isStatic}
              >
                {aggregatedData.map((entry, index) => (
-                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="black" strokeWidth={1} />
+                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="black" strokeWidth={2} />
                ))}
              </Pie>
           </PieChart>
         );
       default: // Bar
         return (
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-            <XAxis dataKey={xAxisKey} style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <YAxis style={{ fontSize: '12px' }} tick={{ fill: 'currentColor' }} />
-            <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
-                cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#000" opacity={0.05} />
+            <XAxis 
+              dataKey={xAxisKey} 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+              dy={10}
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fontWeight: 700, fill: '#000', opacity: 0.4 }}
+            />
+            <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} content={<CustomTooltip />} />
+            <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
             {yAxisKeys.map((key, i) => (
-              <Bar key={key} dataKey={key} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} isAnimationActive={!isStatic} />
+              <Bar 
+                key={key} 
+                dataKey={key} 
+                fill={COLORS[i % COLORS.length]} 
+                radius={[6, 6, 0, 0]} 
+                isAnimationActive={!isStatic} 
+                barSize={40}
+              />
             ))}
           </BarChart>
         );
@@ -327,7 +369,7 @@ export default function ChartGenerator({
                   onChange={(e) => {
                     const newY = e.target.value;
                     setYAxisKeys([newY]);
-                    onConfigChange?.({ type: chartType, xAxis, yAxis: newY });
+                    onConfigChange?.({ type: chartType, xAxis: xAxisKey, yAxis: newY });
                   }}
                   >
                   {numericKeys.map(k => (
@@ -342,7 +384,7 @@ export default function ChartGenerator({
         isStatic ? (
           <div 
               className={cn(
-                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
+                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg",
                   fullHeight ? "flex-1 min-h-0" : "h-[500px]"
               )}
           >
@@ -357,7 +399,7 @@ export default function ChartGenerator({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
               className={cn(
-                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo",
+                  "w-full border-2 border-black rounded-xl p-6 bg-white shadow-neo transition-all hover:shadow-neo-lg",
                   fullHeight ? "flex-1 min-h-0" : "h-[500px]"
               )}
           >
