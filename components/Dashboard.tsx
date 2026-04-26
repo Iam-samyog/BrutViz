@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [exportStatus, setExportStatus] = useState("");
   const [currentExportPage, setCurrentExportPage] = useState<{ type: 'cover' | 'analysis_1' | 'analysis_2', catKey?: string, numKey?: string } | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
+  const [isInsightsOpen, setIsInsightsOpen] = useState(true);
 
   const activeData = transformedData || data;
 
@@ -632,21 +633,31 @@ export default function Dashboard() {
       </header>
       
       {/* Sidebar Layout Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
+      <div className={cn("grid gap-8 relative z-10", isInsightsOpen ? "grid-cols-1 lg:grid-cols-4" : "grid-cols-1")}>
         
         {/* Sidebar: Key Insights */}
+        {isInsightsOpen && (
         <aside className="lg:col-span-1 space-y-6">
-            <div className="flex items-center gap-3 p-4 bg-white border-4 border-black rounded-2xl shadow-neo-sm">
-                <div className="p-2 bg-primary text-white border-2 border-black rounded-lg">
-                    <Lightbulb className="w-5 h-5" />
+            <div className="flex items-center justify-between p-4 bg-white border-4 border-black rounded-2xl shadow-neo-sm">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary text-white border-2 border-black rounded-lg">
+                        <Lightbulb className="w-5 h-5" />
+                    </div>
+                    <h2 className="text-xl font-black uppercase tracking-tight">Key Insights</h2>
                 </div>
-                <h2 className="text-xl font-black uppercase tracking-tight">Key Insights</h2>
+                <button 
+                    onClick={() => setIsInsightsOpen(false)}
+                    className="p-1 hover:bg-black/5 rounded-full transition-colors"
+                >
+                    <X className="w-5 h-5 text-black/60 hover:text-black" />
+                </button>
             </div>
             <InsightsPanel data={activeData} orientation="vertical" />
         </aside>
+        )}
 
         {/* Main Content Area */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className={cn("space-y-6", isInsightsOpen ? "lg:col-span-3" : "col-span-1")}>
             {transformedData && (
                 <div className="flex justify-center mb-6">
                     <button 
@@ -660,7 +671,17 @@ export default function Dashboard() {
 
             <main className="space-y-6">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex bg-white items-center rounded-3xl border-4 border-black shadow-neo-sm overflow-hidden p-2 gap-4">
+                <div className="flex items-center gap-4">
+                    {!isInsightsOpen && (
+                        <button 
+                            onClick={() => setIsInsightsOpen(true)}
+                            className="p-2 bg-white text-black border-4 border-black hover:bg-black hover:text-white rounded-2xl shadow-neo-sm hover:translate-y-[-2px] transition-all"
+                            title="Show Insights"
+                        >
+                            <Lightbulb className="w-6 h-6" />
+                        </button>
+                    )}
+                    <div className="flex bg-white items-center rounded-3xl border-4 border-black shadow-neo-sm overflow-hidden p-2 gap-4">
                     <button
                         onClick={() => setActiveTab("table")}
                         className={cn(
@@ -719,6 +740,7 @@ export default function Dashboard() {
                             />
                         </div>
                     )}
+                </div>
                 </div>
                 </div>
 
@@ -785,16 +807,13 @@ export default function Dashboard() {
                                         forcedXAxis={chartConfig.xAxis}
                                         forcedYAxis={chartConfig.yAxis}
                                         forcedShowForecast={chartConfig.showForecast}
-                                        colorPalette={['#ff9bc5', '#3388ff', '#f6d743', '#ff4911', '#4ade80', '#a855f7', '#ffffff']}
+                                        colorPalette={['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899']}
                                     />
                                 </div>
 
                                 {/* Pentagon Radar Chart — Violet tint */}
                                 <div className="bg-violet-50 border-4 border-black rounded-3xl shadow-neo-sm overflow-hidden h-[500px] flex flex-col">
-                                    <div className="px-5 pt-4 pb-2 border-b-2 border-black/5 flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Multi-Axis</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-black">Pentagon</span>
-                                    </div>
+                                  
                                     <div className="flex-1 min-h-0">
                                         <ChartGenerator 
                                             data={activeData} 
@@ -803,7 +822,7 @@ export default function Dashboard() {
                                             fullHeight={true}
                                             forcedXAxis={chartConfig.xAxis}
                                             forcedYAxis={chartConfig.yAxis}
-                                            colorPalette={['#a855f7', '#ff4911', '#3388ff', '#f6d743', '#4ade80']}
+                                            colorPalette={['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6']}
                                         />
                                     </div>
                                 </div>
