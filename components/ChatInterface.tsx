@@ -18,7 +18,7 @@ interface Message {
 
 export default function ChatInterface({ data, onChartConfig }: ChatInterfaceProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
+  const [apiKey, setApiKey] = useState(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBMg1zXEgDkoabdWBw-kVJEZPbRjXe2pNg");
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hello! I am OriData AI. Ask me anything about your dataset!" }
   ]);
@@ -172,23 +172,16 @@ ${sample}
                 parts: [{ text: m.content }]
             }));
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                contents: [
-                    {
-                        role: "user",
-                        parts: [{ text: `SYSTEM INSTRUCTION: ${systemPrompt}\n\nPlease acknowledge these instructions and respond to the following user message accordingly.` }]
-                    },
-                    {
-                        role: "model",
-                        parts: [{ text: "Understood. I am OriData AI, your Lead Data Scientist. I will analyze your data with precision, identifying trends, outliers, and causal drivers while maintaining an authoritative, executive tone. How can I help you with your dataset today?" }]
-                    },
-                    ...apiHistory
-                ]
+                contents: apiHistory,
+                system_instruction: {
+                    parts: [{ text: systemPrompt }]
+                }
             })
         });
 
