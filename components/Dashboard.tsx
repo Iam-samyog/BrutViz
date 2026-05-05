@@ -833,9 +833,9 @@ export default function Dashboard() {
                             <div
                                 className="w-full rounded-2xl overflow-hidden h-[480px] relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #0f0f1a 0%, #12121f 100%)",
-                                    border: "1px solid rgba(99,102,241,0.25)",
-                                    boxShadow: "0 0 0 1px rgba(99,102,241,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "2px solid rgba(255,255,255,0.1)",
+                                    boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #6366f1, #a855f7, #ec4899)" }} />
@@ -862,9 +862,9 @@ export default function Dashboard() {
                                 <div
                                     className="rounded-2xl overflow-hidden h-[480px] relative"
                                     style={{
-                                        background: "linear-gradient(145deg, #130d1a 0%, #150f1f 100%)",
-                                        border: "1px solid rgba(236,72,153,0.25)",
-                                        boxShadow: "0 0 0 1px rgba(236,72,153,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #ec4899, #f43f5e, #f59e0b)" }} />
@@ -889,9 +889,9 @@ export default function Dashboard() {
                                 <div
                                     className="rounded-2xl overflow-hidden h-[480px] relative flex flex-col"
                                     style={{
-                                        background: "linear-gradient(145deg, #0d1117 0%, #0f131c 100%)",
-                                        border: "1px solid rgba(16,185,129,0.25)",
-                                        boxShadow: "0 0 0 1px rgba(16,185,129,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #10b981, #3b82f6, #6366f1)" }} />
@@ -918,9 +918,9 @@ export default function Dashboard() {
                                 <div
                                     className="w-full rounded-2xl overflow-hidden h-[440px] relative"
                                     style={{
-                                        background: "linear-gradient(145deg, #0d0f1a 0%, #10121f 100%)",
-                                        border: "1px solid rgba(59,130,246,0.25)",
-                                        boxShadow: "0 0 0 1px rgba(59,130,246,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #3b82f6, #6366f1, #a855f7)" }} />
@@ -945,9 +945,9 @@ export default function Dashboard() {
                                 <div
                                     className="w-full rounded-2xl overflow-hidden h-[440px] relative"
                                     style={{
-                                        background: "linear-gradient(145deg, #0d130f 0%, #0f1812 100%)",
-                                        border: "1px solid rgba(16,185,129,0.2)",
-                                        boxShadow: "0 0 0 1px rgba(16,185,129,0.08), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #10b981, #f59e0b, #f43f5e)" }} />
@@ -975,9 +975,9 @@ export default function Dashboard() {
                                 <div
                                     className="rounded-2xl overflow-hidden h-[480px] relative"
                                     style={{
-                                        background: "linear-gradient(145deg, #0a0a1a 0%, #0c0c2a 100%)",
-                                        border: "1px solid rgba(139,92,246,0.25)",
-                                        boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6)" }} />
@@ -1001,9 +1001,9 @@ export default function Dashboard() {
                                 <div
                                     className="rounded-2xl overflow-hidden h-[480px] relative"
                                     style={{
-                                        background: "linear-gradient(145deg, #050f15 0%, #081218 100%)",
-                                        border: "1px solid rgba(6,182,212,0.25)",
-                                        boxShadow: "0 0 0 1px rgba(6,182,212,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                        background: "#000000",
+                                        border: "2px solid rgba(255,255,255,0.1)",
+                                        boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
                                     }}
                                 >
                                     <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #06b6d4, #3b82f6, #6366f1)" }} />
@@ -1210,7 +1210,7 @@ export default function Dashboard() {
                     </div>
                 ) : currentExportPage.type === 'analysis_1' ? (
                     // --- ANALYSIS PAGE 1: COMPARISON & TRENDS (Bar + Line) ---
-                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]"> 
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-black"> 
                          <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
                             <div className="flex items-baseline gap-4">
                                 <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
@@ -1236,9 +1236,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[550px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #0f0f1a 0%, #12121f 100%)",
-                                    border: "1px solid rgba(99,102,241,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #6366f1, #ec4899)" }} />
@@ -1263,9 +1262,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[550px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #0d0f1a 0%, #10121f 100%)",
-                                    border: "1px solid rgba(59,130,246,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #3b82f6, #6366f1, #a855f7)" }} />
@@ -1287,7 +1285,7 @@ export default function Dashboard() {
                     </div>
                 ) : currentExportPage.type === 'analysis_2' ? (
                     // --- ANALYSIS PAGE 2: DISTRIBUTION & STATS (Pie + Radar) ---
-                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]"> 
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-black"> 
                          <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
                             <div className="flex items-baseline gap-4">
                                 <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
@@ -1313,9 +1311,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[600px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #1a0f12 0%, #1f1215 100%)",
-                                    border: "1px solid rgba(236,72,153,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #ec4899, #f43f5e)" }} />
@@ -1340,9 +1337,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[560px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #0d1117 0%, #0f131c 100%)",
-                                    border: "1px solid rgba(16,185,129,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #10b981, #3b82f6, #6366f1)" }} />
@@ -1365,7 +1361,7 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     // --- ANALYSIS PAGE 3: HEATMAP & BUBBLE ---
-                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]">
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-black">
                         <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
                             <div className="flex items-baseline gap-4">
                                 <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
@@ -1391,9 +1387,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[550px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #0a0a1a 0%, #0c0c2a 100%)",
-                                    border: "1px solid rgba(139,92,246,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6)" }} />
@@ -1419,9 +1414,8 @@ export default function Dashboard() {
                             <div 
                                 className="h-[560px] rounded-3xl overflow-hidden relative"
                                 style={{
-                                    background: "linear-gradient(145deg, #050f15 0%, #081218 100%)",
-                                    border: "1px solid rgba(6,182,212,0.25)",
-                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    background: "#000000",
+                                    border: "1px solid rgba(255,255,255,0.1)",
                                 }}
                             >
                                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #06b6d4, #3b82f6, #6366f1)" }} />
