@@ -135,7 +135,7 @@ export default function ManualTableCreator({ onConfirm, onCancel }: ManualTableC
                                 <th className="p-4 w-20">
                                     <button 
                                         onClick={addColumn}
-                                        className="p-3 bg-background border-3 border-border rounded-xl hover:bg-primary hover:text-background transition-all transform hover:rotate-12"
+                                        className="p-3 text-background border-3 border-border rounded-xl hover:bg-primary hover:bg-background transition-all transform hover:rotate-12"
                                         title="Add Column"
                                     >
                                         <Plus className="w-5 h-5" />
