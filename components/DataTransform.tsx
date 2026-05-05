@@ -96,16 +96,16 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                     initial={{ opacity: 0, x: 20, scale: 0.95 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                    className="w-[calc(100vw-32px)] sm:w-96 max-h-[80vh] sm:max-h-[600px] bg-white border-4 border-black shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto"
+                    className="w-[calc(100vw-32px)] sm:w-96 max-h-[80vh] sm:max-h-[600px] bg-background border-4 border-border shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 bg-white border-b-4 border-black">
+                    <div className="flex items-center justify-between p-4 bg-background border-b-4 border-border">
                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary text-white border-2 border-black rounded-lg">
+                            <div className="p-2 bg-primary text-background border-2 border-border rounded-lg">
                                 <Calculator className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-black">Transform Data</h3>
+                                <h3 className="font-bold text-lg text-foreground">Transform Data</h3>
                                 <p className="text-xs text-muted-foreground font-medium">
                                     {transformations.length} active pipelines
                                 </p>
@@ -113,7 +113,7 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                         </div>
                         <button 
                             onClick={() => setIsOpen(false)}
-                            className="p-1 hover:bg-black/10 rounded-lg transition-colors"
+                            className="p-1 hover:bg-foreground/10 rounded-lg transition-colors"
                         >
                             <span className="font-bold text-xl">&times;</span>
                         </button>
@@ -122,9 +122,9 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                     {/* Content */}
                     <div className="p-4 overflow-y-auto space-y-4">
                         {transformations.map((t, i) => (
-                            <div key={t.id} className="flex flex-col gap-3 p-3 bg-white border-2 border-black rounded-xl shadow-neo-sm">
-                                <div className="flex items-center justify-between border-b-2 border-black/10 pb-2">
-                                    <span className="font-bold text-[10px] uppercase bg-black text-white px-2 py-0.5 rounded">
+                            <div key={t.id} className="flex flex-col gap-3 p-3 bg-background border-2 border-border rounded-xl shadow-neo-sm">
+                                <div className="flex items-center justify-between border-b-2 border-border/10 pb-2">
+                                    <span className="font-bold text-[10px] bg-foreground text-background px-2 py-0.5 rounded">
                                         Step {i + 1}: {t.type}
                                     </span>
                                     <button 
@@ -140,7 +140,7 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                                         <div>
                                             <label className="text-xs font-black block mb-1">GROUP BY</label>
                                             <select 
-                                                className="w-full p-2 border-2 border-black rounded-lg font-bold text-sm"
+                                                className="w-full p-2 border-2 border-border rounded-lg font-bold text-sm"
                                                 value={t.config.groupCol}
                                                 onChange={(e) => updateTransformation(t.id, "groupCol", e.target.value)}
                                             >
@@ -153,7 +153,7 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                                             <div>
                                                 <label className="text-xs font-black block mb-1">OP</label>
                                                 <select 
-                                                    className="w-full p-2 border-2 border-black rounded-lg font-bold text-sm"
+                                                    className="w-full p-2 border-2 border-border rounded-lg font-bold text-sm"
                                                     value={t.config.operation}
                                                     onChange={(e) => updateTransformation(t.id, "operation", e.target.value)}
                                                 >
@@ -165,7 +165,7 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                                             <div>
                                                 <label className="text-xs font-black block mb-1">FIELD</label>
                                                 <select 
-                                                    className="w-full p-2 border-2 border-black rounded-lg font-bold text-sm"
+                                                    className="w-full p-2 border-2 border-border rounded-lg font-bold text-sm"
                                                     value={t.config.aggCol}
                                                     onChange={(e) => updateTransformation(t.id, "aggCol", e.target.value)}
                                                 >
@@ -182,20 +182,20 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
                         <div className="flex gap-2 justify-center pt-2">
                             <button
                                 onClick={() => addTransformation("groupBy")}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-xl shadow-neo-sm hover:translate-y-[-1px] hover:shadow-none active:translate-y-[1px] transition-all text-sm font-bold"
+                                className="flex items-center gap-2 px-4 py-2 bg-background border-2 border-border rounded-xl shadow-neo-sm hover:translate-y-[-1px] hover:shadow-none active:translate-y-[1px] transition-all text-sm font-bold"
                             >
                                 <Plus className="w-4 h-4" />
                                 Add Group By
                             </button>
                         </div>
                         
-                        <div className="pt-4 border-t-2 border-black/10">
+                        <div className="pt-4 border-t-2 border-border/10">
                             <button
                                 onClick={() => {
                                     onDataTransformed(transformedData);
                                     setIsOpen(false);
                                 }}
-                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-xl shadow-neo hover:bg-primary transition-all font-bold"
+                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background rounded-xl shadow-neo hover:bg-primary transition-all font-bold"
                             >
                                 Apply Changes <ArrowRight className="w-4 h-4" />
                             </button>
@@ -210,7 +210,7 @@ export default function DataTransform({ data, onDataTransformed }: DataTransform
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
             className={cn(
-                "p-4 bg-white text-black rounded-2xl shadow-neo border-4 border-black pointer-events-auto",
+                "p-4 bg-background text-foreground rounded-2xl shadow-neo border-4 border-border pointer-events-auto",
                 isOpen && "hidden"
             )}
         >

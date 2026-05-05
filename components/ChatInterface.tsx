@@ -214,24 +214,24 @@ ${sample}
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="w-[calc(100vw-32px)] sm:w-[400px] h-[500px] sm:h-[600px] bg-white border-4 border-black shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto z-[1001]"
+                    className="w-[calc(100vw-32px)] sm:w-[400px] h-[500px] sm:h-[600px] bg-background border-4 border-border shadow-neo rounded-2xl flex flex-col overflow-hidden pointer-events-auto z-[1001]"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 bg-primary text-white border-b-4 border-black">
+                    <div className="flex items-center justify-between p-4 bg-primary text-background border-b-4 border-border">
                         <div className="flex items-center gap-2">
                             <Bot className="w-5 h-5" />
                             <h3 className="font-bold">OriData AI</h3>
                         </div>
                         <button 
                             onClick={() => setIsOpen(false)}
-                            className="p-1 hover:bg-black/10 rounded-lg transition-colors"
+                            className="p-1 hover:bg-foreground/10 rounded-lg transition-colors"
                         >
                             <span className="font-bold text-xl">&times;</span>
                         </button>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white/50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50">
                         {!apiKey ? (
                             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-4">
                                 <KeyRound className="w-10 h-10 text-muted-foreground/30" />
@@ -239,7 +239,7 @@ ${sample}
                                 <input 
                                     type="password"
                                     placeholder="Enter Gemini API Key..."
-                                    className="w-full p-2 border-2 border-black rounded-lg text-sm"
+                                    className="w-full p-2 border-2 border-border rounded-lg text-sm"
                                     onChange={(e) => handleSaveKey(e.target.value)}
                                 />
                                 <p className="text-xs text-muted-foreground">Stored locally in your browser.</p>
@@ -254,13 +254,13 @@ ${sample}
                                         className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}
                                     >
                                         {m.role === "assistant" && (
-                                            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
+                                            <div className="w-10 h-10 rounded-xl bg-primary text-background flex items-center justify-center mt-1 border-2 border-border shadow-neo-sm shrink-0">
                                                 <Bot className="w-6 h-6" />
                                             </div>
                                         )}
                                         <div className={cn(
-                                            "max-w-[85%] p-4 text-sm font-bold rounded-2xl border-4 border-black shadow-neo-sm whitespace-pre-wrap relative overflow-hidden",
-                                            m.role === "user" ? "bg-black text-white" : "bg-white text-black"
+                                            "max-w-[85%] p-4 text-sm font-bold rounded-2xl border-4 border-border shadow-neo-sm whitespace-pre-wrap relative overflow-hidden",
+                                            m.role === "user" ? "bg-foreground text-background" : "bg-background text-foreground"
                                         )}>
                                             {m.role === "assistant" && (
                                                 <div className="absolute top-0 right-0 w-16 h-16 bg-primary opacity-[0.03] rounded-full -mr-8 -mt-8" />
@@ -284,21 +284,21 @@ ${sample}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="flex gap-3"
                                     >
-                                         <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center mt-1 border-2 border-black shadow-neo-sm shrink-0">
+                                         <div className="w-10 h-10 rounded-xl bg-primary text-background flex items-center justify-center mt-1 border-2 border-border shadow-neo-sm shrink-0">
                                             <Bot className="w-6 h-6 animate-pulse" />
                                          </div>
-                                         <div className="bg-white px-4 py-3 rounded-2xl border-4 border-black shadow-neo-sm flex items-center gap-2">
+                                         <div className="bg-background px-4 py-3 rounded-2xl border-4 border-border shadow-neo-sm flex items-center gap-2">
                                             <div className="flex gap-1">
                                                 {[0, 1, 2].map((dot) => (
                                                     <motion.div
                                                         key={dot}
                                                         animate={{ y: [0, -5, 0] }}
                                                         transition={{ repeat: Infinity, duration: 0.6, delay: dot * 0.1 }}
-                                                        className="w-1.5 h-1.5 rounded-full bg-black"
+                                                        className="w-1.5 h-1.5 rounded-full bg-foreground"
                                                     />
                                                 ))}
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Searching your data...</span>
+                                            <span className="text-[10px] font-black tracking-widest text-foreground/40">Searching your data...</span>
                                          </div>
                                     </motion.div>
                                 )}
@@ -308,17 +308,17 @@ ${sample}
 
                     {/* Input */}
                     {apiKey && (
-                        <form onSubmit={handleSubmit} className="p-4 bg-white border-t-4 border-black flex gap-2">
+                        <form onSubmit={handleSubmit} className="p-4 bg-background border-t-4 border-border flex gap-2">
                             <input 
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Ask OriData..."
-                                className="flex-1 p-3 border-2 border-black rounded-lg focus:shadow-neo outline-none transition-all font-bold text-sm"
+                                className="flex-1 p-3 border-2 border-border rounded-lg focus:shadow-neo outline-none transition-all font-bold text-sm"
                             />
                             <button 
                                 type="submit"
                                 disabled={isLoading || !input.trim()}
-                                className="p-3 bg-primary text-white rounded-lg border-2 border-black hover:translate-y-[-2px] active:translate-y-[2px] transition-all disabled:opacity-50 shadow-neo-sm"
+                                className="p-3 bg-primary text-background rounded-lg border-2 border-border hover:translate-y-[-2px] active:translate-y-[2px] transition-all disabled:opacity-50 shadow-neo-sm"
                             >
                                 <Send className="w-5 h-5" />
                             </button>
@@ -333,7 +333,7 @@ ${sample}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
             className={cn(
-                "p-4 bg-primary text-white rounded-2xl shadow-neo border-4 border-black pointer-events-auto",
+                "p-4 bg-primary text-background rounded-2xl shadow-neo border-4 border-border pointer-events-auto",
                 isOpen && "hidden"
             )}
         >

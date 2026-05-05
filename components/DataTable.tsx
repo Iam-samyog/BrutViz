@@ -91,38 +91,38 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
   if (data.length === 0) return null;
 
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       {!showAll && (
         <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground" />
             <input
                 type="text"
                 placeholder="Search details..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border-2 border-black bg-white focus:outline-none focus:shadow-neo transition-all text-sm font-medium placeholder:text-black/40"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg border-2 border-border bg-background focus:outline-none focus:shadow-neo transition-all text-sm font-medium placeholder:text-foreground/40"
             />
             </div>
         </div>
       )}
 
-      <div className="rounded-2xl border-4 border-black overflow-hidden bg-white shadow-neo transition-all">
+      <div className="rounded-2xl border-4 border-border overflow-hidden bg-background shadow-neo transition-all">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent">
           <table className="w-full text-sm font-medium min-w-[600px] md:min-w-full border-collapse">
-            <thead className="bg-primary border-b-4 border-black sticky top-0 z-10 text-white">
+            <thead className="bg-primary border-b-4 border-border sticky top-0 z-10 text-background">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col}
-                    className="h-14 px-6 text-left font-black cursor-pointer hover:bg-black/5 transition-all select-none border-r-2 border-black/10 last:border-r-0"
+                    className="h-14 px-6 text-left font-black cursor-pointer hover:bg-foreground/5 transition-all select-none border-r-2 border-border/10 last:border-r-0"
                     onClick={() => requestSort(col)}
                   >
-                    <div className="flex items-center justify-between gap-2 text-white uppercase tracking-widest text-[10px]">
+                    <div className="flex items-center justify-between gap-2 text-background tracking-widest text-[10px]">
                       {col}
                       <div className={cn(
-                        "p-1 rounded-md border-2 border-black shadow-neo-sm transition-all",
-                        sortConfig?.key === col ? "bg-primary text-white" : "bg-white text-black/20"
+                        "p-1 rounded-md border-2 border-border shadow-neo-sm transition-all",
+                        sortConfig?.key === col ? "bg-primary text-background" : "bg-background text-foreground/20"
                       )}>
                         {sortConfig?.key === col ? (
                           sortConfig.direction === "ascending" ? <ArrowUpDown className="w-3 h-3" /> : <ArrowUpDown className="w-3 h-3 rotate-180" />
@@ -146,9 +146,9 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
                   )}
                 >
                   {columns.map((col) => (
-                    <td key={col} className="p-0 relative border-r-2 border-black/5 last:border-r-0">
+                    <td key={col} className="p-0 relative border-r-2 border-border/5 last:border-r-0">
                         <input 
-                            className="w-full h-full px-6 py-4 bg-transparent border-none focus:ring-inset focus:ring-4 focus:ring-primary/20 outline-none transition-all truncate font-bold group-hover:bg-white/30"
+                            className="w-full h-full px-6 py-4 bg-transparent border-none focus:ring-inset focus:ring-4 focus:ring-primary/20 outline-none transition-all truncate font-bold group-hover:bg-background/30"
                             value={row[col] ?? ""}
                             readOnly={showAll}
                             onChange={(e) => handleCellUpdate(i, col, e.target.value)}
@@ -167,17 +167,17 @@ export default function DataTable({ data, onDataUpdate, showAll = false }: DataT
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-2.5 rounded-lg border-2 border-black hover:bg-white hover:shadow-neo disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all active:translate-y-1 active:shadow-none bg-white"
+            className="p-2.5 rounded-lg border-2 border-border hover:bg-background hover:shadow-neo disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all active:translate-y-1 active:shadow-none bg-background"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="text-sm font-bold mx-2 px-4 py-2 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          <span className="text-sm font-bold mx-2 px-4 py-2 bg-background border-2 border-border rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             Page {currentPage} of {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="p-2.5 rounded-lg border-2 border-black hover:bg-white hover:shadow-neo disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all active:translate-y-1 active:shadow-none bg-white"
+            className="p-2.5 rounded-lg border-2 border-border hover:bg-background hover:shadow-neo disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all active:translate-y-1 active:shadow-none bg-background"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

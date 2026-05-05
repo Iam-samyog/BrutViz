@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // Modern, clean font
+import { Poppins } from "next/font/google"; // Modern, beautiful font
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
-const inter = Inter({
+const poppins = Poppins({
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-poppins",
   display: "swap",
 });
 
@@ -30,9 +32,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${poppins.variable} font-sans antialiased bg-background text-foreground transition-colors duration-300`}
       >
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

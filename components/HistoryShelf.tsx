@@ -64,7 +64,7 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+                        className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[100]"
                     />
                 )}
                 {isOpen && (
@@ -74,14 +74,14 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 h-full w-full max-w-[320px] sm:max-w-sm bg-white border-l-4 border-black z-[101] shadow-[-10px_0px_0px_0px_rgba(0,0,0,1)] flex flex-col"
+                        className="fixed right-0 top-0 h-full w-full max-w-[320px] sm:max-w-sm bg-background border-l-4 border-border z-[101] shadow-[-10px_0px_0px_0px_rgba(0,0,0,1)] flex flex-col"
                     >
-                        <div className="p-6 border-b-4 border-black bg-primary text-white flex items-center justify-between">
+                        <div className="p-6 border-b-4 border-border bg-primary text-background flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Clock className="w-6 h-6" />
-                                <h2 className="text-2xl font-black tracking-tight uppercase">History</h2>
+                                <h2 className="text-2xl font-black tracking-tight">History</h2>
                             </div>
-                            <button onClick={onClose} className="p-2 hover:bg-black/10 rounded-lg transition-colors">
+                            <button onClick={onClose} className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
@@ -89,10 +89,10 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {history.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
-                                    <div className="p-4 bg-gray-100 rounded-full border-2 border-black border-dashed">
+                                    <div className="p-4 bg-gray-100 rounded-full border-2 border-border border-dashed">
                                         <FileText className="w-12 h-12" />
                                     </div>
-                                    <p className="font-black uppercase tracking-widest text-sm">No history yet</p>
+                                    <p className="font-black tracking-widest text-sm">No history yet</p>
                                 </div>
                             ) : (
                                 history.map((item) => (
@@ -100,14 +100,14 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                                         key={item.id}
                                         onClick={() => onSelect(item)}
                                         className={cn(
-                                            "p-4 border-4 border-black rounded-xl shadow-neo-sm cursor-pointer transition-all hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-neo group relative overflow-hidden",
-                                            currentDataId === item.id ? "bg-primary/10 border-primary" : "bg-white"
+                                            "p-4 border-4 border-border rounded-xl shadow-neo-sm cursor-pointer transition-all hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-neo group relative overflow-hidden",
+                                            currentDataId === item.id ? "bg-primary/10 border-primary" : "bg-background"
                                         )}
                                     >
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-1">
                                                 <h3 className="font-black text-lg truncate pr-8">{item.fileName}</h3>
-                                                <div className="flex items-center gap-3 text-xs font-bold text-black/40">
+                                                <div className="flex items-center gap-3 text-xs font-bold text-foreground/40">
                                                     <span>{item.rowCount} rows</span>
                                                     <span>•</span>
                                                     <span>{new Date(item.timestamp).toLocaleDateString()}</span>
@@ -115,7 +115,7 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                                             </div>
                                             <button 
                                                 onClick={(e) => deleteItem(e, item.id)}
-                                                className="absolute top-4 right-4 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-white rounded-md border-2 border-transparent hover:border-black transition-all"
+                                                className="absolute top-4 right-4 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-background rounded-md border-2 border-transparent hover:border-border transition-all"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -126,10 +126,10 @@ export const HistoryShelf: React.FC<HistoryShelfProps> = ({ isOpen, onClose, onS
                         </div>
 
                         {history.length > 0 && (
-                            <div className="p-4 border-t-4 border-black bg-gray-50">
+                            <div className="p-4 border-t-4 border-border bg-gray-50">
                                 <button 
                                     onClick={() => setShowClearConfirm(true)}
-                                    className="w-full py-3 bg-white text-black border-2 border-black font-black uppercase tracking-widest text-xs hover:bg-destructive hover:text-white transition-all shadow-neo-sm active:translate-y-[2px] active:shadow-none"
+                                    className="w-full py-3 bg-background text-foreground border-2 border-border font-black tracking-widest text-xs hover:bg-destructive hover:text-background transition-all shadow-neo-sm active:translate-y-[2px] active:shadow-none"
                                 >
                                     Clear History
                                 </button>

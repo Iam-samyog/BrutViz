@@ -8,13 +8,13 @@ import { cn } from '@/lib/utils';
 export const STICKERS = [
     // Text Stickers
     { id: 'look', type: 'text', content: 'LOOK HERE!', color: 'bg-yellow-300', rotate: -5 },
-    { id: 'danger', type: 'text', content: 'DANGER!', color: 'bg-red-500 text-white', rotate: 3 },
-    { id: 'cool', type: 'text', content: 'COOL DATA', color: 'bg-primary text-white', rotate: -2 },
-    { id: 'growth', type: 'text', content: 'GROWTH!', color: 'bg-green-500 text-white', rotate: 5 },
-    { id: 'wow', type: 'text', content: 'WOW!', color: 'bg-purple-500 text-white', rotate: -8 },
-    { id: 'hot', type: 'text', content: '🔥 HOT!', color: 'bg-orange-500 text-white', rotate: 6 },
-    { id: 'new', type: 'text', content: 'NEW!', color: 'bg-pink-500 text-white', rotate: -4 },
-    { id: 'important', type: 'text', content: 'IMPORTANT', color: 'bg-black text-white', rotate: 2 },
+    { id: 'danger', type: 'text', content: 'DANGER!', color: 'bg-red-500 text-background', rotate: 3 },
+    { id: 'cool', type: 'text', content: 'COOL DATA', color: 'bg-primary text-background', rotate: -2 },
+    { id: 'growth', type: 'text', content: 'GROWTH!', color: 'bg-green-500 text-background', rotate: 5 },
+    { id: 'wow', type: 'text', content: 'WOW!', color: 'bg-purple-500 text-background', rotate: -8 },
+    { id: 'hot', type: 'text', content: '🔥 HOT!', color: 'bg-orange-500 text-background', rotate: 6 },
+    { id: 'new', type: 'text', content: 'NEW!', color: 'bg-pink-500 text-background', rotate: -4 },
+    { id: 'important', type: 'text', content: 'IMPORTANT', color: 'bg-foreground text-background', rotate: 2 },
     { id: 'key_insight', type: 'text', content: '🔑 KEY', color: 'bg-amber-400', rotate: -3 },
     { id: 'question', type: 'text', content: '❓ WHY?', color: 'bg-blue-300', rotate: 7 },
     // Icon Stickers
@@ -33,8 +33,8 @@ export const STICKERS = [
     { id: 'rocket_stick', type: 'icon', content: <Rocket className="w-8 h-8"/>, color: 'bg-cyan-400', rotate: -15 },
     { id: 'eye_stick', type: 'icon', content: <Eye className="w-8 h-8"/>, color: 'bg-gray-400', rotate: 3 },
     { id: 'lightbulb_stick', type: 'icon', content: <Lightbulb className="w-8 h-8"/>, color: 'bg-yellow-200', rotate: -6 },
-    { id: 'flag_stick', type: 'icon', content: <Flag className="w-8 h-8"/>, color: 'bg-red-500 text-white', rotate: 10 },
-    { id: 'check_stick', type: 'icon', content: <CheckCircle2 className="w-8 h-8"/>, color: 'bg-green-500 text-white', rotate: -10 },
+    { id: 'flag_stick', type: 'icon', content: <Flag className="w-8 h-8"/>, color: 'bg-red-500 text-background', rotate: 10 },
+    { id: 'check_stick', type: 'icon', content: <CheckCircle2 className="w-8 h-8"/>, color: 'bg-green-500 text-background', rotate: -10 },
 ];
 
 interface StickerPaletteProps {
@@ -53,33 +53,33 @@ export const StickerPalette: React.FC<StickerPaletteProps> = ({ isOpen, onClose,
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/20 z-[100]"
+                        className="fixed inset-0 bg-foreground/20 z-[100]"
                     />
                     <motion.div
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 h-full w-full max-w-[260px] sm:max-w-[280px] bg-white border-l-4 border-black z-[101] shadow-[-10px_0px_0px_0px_rgba(0,0,0,1)] flex flex-col"
+                        className="fixed right-0 top-0 h-full w-full max-w-[260px] sm:max-w-[280px] bg-background border-l-4 border-border z-[101] shadow-[-10px_0px_0px_0px_rgba(0,0,0,1)] flex flex-col"
                     >
-                        <div className="p-6 border-b-4 border-black bg-primary text-white flex items-center justify-between">
+                        <div className="p-6 border-b-4 border-border bg-primary text-background flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Sticker className="w-6 h-6" />
-                                <h2 className="text-xl font-black tracking-tight uppercase">Stickers</h2>
+                                <h2 className="text-xl font-black tracking-tight">Stickers</h2>
                             </div>
-                            <button onClick={onClose} className="p-2 hover:bg-black/10 rounded-lg transition-colors">
+                            <button onClick={onClose} className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 gap-4">
-                            <p className="text-xs font-black uppercase text-black/40 mb-2">Click to add sticker</p>
+                            <p className="text-xs font-black text-foreground/40 mb-2">Click to add sticker</p>
                             {STICKERS.map((sticker) => (
                                 <button
                                     key={sticker.id}
                                     onClick={() => onAddSticker(sticker)}
                                     className={cn(
-                                        "p-4 border-4 border-black rounded-xl shadow-neo-sm hover:shadow-neo hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all flex items-center justify-center font-black uppercase tracking-tighter text-sm",
+                                        "p-4 border-4 border-border rounded-xl shadow-neo-sm hover:shadow-neo hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all flex items-center justify-center font-black  tracking-tighter text-sm",
                                         sticker.color
                                     )}
                                     style={{ transform: `rotate(${sticker.rotate}deg)` }}

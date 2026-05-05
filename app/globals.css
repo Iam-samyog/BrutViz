@@ -29,55 +29,67 @@
 
 :root {
   /* Bold Neo-Brutalist Palette: Black, White, Electric Blue */
-  /* Using explicit HEX codes to ensure icon visibility */
-  
-  --background: #FFFFFF;         /* Pure White */
-  --foreground: #000000;         /* Pure Black */
-
-  --card: #FFFFFF;
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --card: #F9FAFB;
   --card-foreground: #000000;
-
   --popover: #FFFFFF;
   --popover-foreground: #000000;
-
-  --primary: #2563EB;            /* Electric Blue */
+  --primary: #2563EB;
   --primary-foreground: #FFFFFF;
-
-  --secondary: #F3F4F6;          /* Light Gray */
+  --secondary: #F3F4F6;
   --secondary-foreground: #000000;
-
   --muted: #F3F4F6;
-  --muted-foreground: #4B5563;   /* Gray 600 - Visible on white */
-
+  --muted-foreground: #6B7280;
   --accent: #2563EB;
   --accent-foreground: #FFFFFF;
-
-  --destructive: #EF4444;        /* Red */
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-
-  --border: #000000;             /* Black Borders */
+  --border: #000000;
   --input: #000000;
   --ring: #2563EB;
+  --radius: 12px;
+}
 
-  --radius: 0.75rem;             /* Moderate rounding */
+.dark {
+  /* Premium Dark Mode: Deep Blacks and Sharp Accents */
+  --background: #0A0A0A;
+  --foreground: #F9FAFB;
+  --card: #141414;
+  --card-foreground: #F9FAFB;
+  --popover: #0A0A0A;
+  --popover-foreground: #F9FAFB;
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1F2937;
+  --secondary-foreground: #F9FAFB;
+  --muted: #1F2937;
+  --muted-foreground: #9CA3AF;
+  --accent: #3B82F6;
+  --accent-foreground: #FFFFFF;
+  --destructive: #F87171;
+  --destructive-foreground: #FFFFFF;
+  --border: #F9FAFB;
+  --input: #F9FAFB;
+  --ring: #3B82F6;
 }
 
 /* Neo-Brutalist Utilities */
 @layer utilities {
     .shadow-neo {
-        box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
-        border: 2px solid black;
+        box-shadow: 4px 4px 0px 0px var(--border);
+        border: 2px solid var(--border);
     }
     .shadow-neo-sm {
-        box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
-        border: 2px solid black;
+        box-shadow: 2px 2px 0px 0px var(--border);
+        border: 2px solid var(--border);
     }
     .shadow-neo-lg {
-        box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
-        border: 3px solid black;
+        box-shadow: 8px 8px 0px 0px var(--border);
+        border: 3px solid var(--border);
     }
     .border-neo {
-        border: 2px solid black;
+        border: 2px solid var(--border);
     }
     .no-scrollbar::-webkit-scrollbar {
         display: none;
@@ -86,41 +98,6 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-    .mask-fade-edges {
-        mask-image: linear-gradient(to right, transparent, black 150px, black calc(100% - 150px), transparent);
-        -webkit-mask-image: linear-gradient(to right, transparent, black 150px, black calc(100% - 150px), transparent);
-    }
-}
-
-.dark {
-  /* High Contrast Dark Mode */
-  --background: #000000;
-  --foreground: #FFFFFF;
-
-  --card: #000000;
-  --card-foreground: #FFFFFF;
-
-  --popover: #000000;
-  --popover-foreground: #FFFFFF;
-
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-
-  --secondary: #1F2937;
-  --secondary-foreground: #FFFFFF;
-
-  --muted: #1F2937;
-  --muted-foreground: #9CA3AF;
-
-  --accent: #1F2937;
-  --accent-foreground: #FFFFFF;
-
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-
-  --border: #FFFFFF;
-  --input: #FFFFFF;
-  --ring: #2563EB;
 }
 
 @layer base {
@@ -128,18 +105,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-200 font-sans;
+    @apply bg-background text-foreground transition-colors duration-300 font-sans;
   }
 }
 
 /* Chunky Scrollbar */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-background border-l-2 border-black;
+  @apply bg-background;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/20 border-2 border-black rounded-lg hover:bg-primary/40;
+  @apply bg-foreground/10 border-2 border-border rounded-full hover:bg-foreground/20;
 }

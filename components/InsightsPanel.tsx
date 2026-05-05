@@ -12,11 +12,11 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "summary": return <FileBarChart className="w-5 h-5 text-white" />;
-      case "correlation": return <TrendingUp className="w-5 h-5 text-white" />;
-      case "outlier": return <AlertTriangle className="w-5 h-5 text-white" />;
-      case "driver": return <BarChart3 className="w-5 h-5 text-white" />;
-      default: return <BarChart3 className="w-5 h-5 text-white" />;
+      case "summary": return <FileBarChart className="w-5 h-5 text-background" />;
+      case "correlation": return <TrendingUp className="w-5 h-5 text-background" />;
+      case "outlier": return <AlertTriangle className="w-5 h-5 text-background" />;
+      case "driver": return <BarChart3 className="w-5 h-5 text-background" />;
+      default: return <BarChart3 className="w-5 h-5 text-background" />;
     }
   };
 
@@ -26,7 +26,7 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
           case 'correlation': return { bg: 'bg-[#AF52DE]', light: 'bg-[#AF52DE]/10', border: 'border-[#AF52DE]', label: 'Correlation' };
           case 'outlier': return { bg: 'bg-[#FF2D55]', light: 'bg-[#FF2D55]/10', border: 'border-[#FF2D55]', label: 'Outlier' };
           case 'driver': return { bg: 'bg-[#FF9500]', light: 'bg-[#FF9500]/10', border: 'border-[#FF9500]', label: 'Driver' };
-          default: return { bg: 'bg-black', light: 'bg-black/5', border: 'border-black', label: 'Insight' };
+          default: return { bg: 'bg-foreground', light: 'bg-foreground/5', border: 'border-border', label: 'Insight' };
       }
   }
 
@@ -34,7 +34,7 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-black text-black underline decoration-2 decoration-black/10 underline-offset-2">{part.slice(2, -2)}</strong>;
+        return <strong key={i} className="font-black text-foreground underline decoration-2 decoration-black/10 underline-offset-2">{part.slice(2, -2)}</strong>;
       }
       return part;
     });
@@ -55,7 +55,7 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
             whileHover={{ y: -5, scale: 1.02, rotate: 0.5 }}
             transition={{ delay: index * 0.05 }}
             className={cn(
-                "p-5 rounded-2xl border-4 border-black bg-white shadow-neo-sm hover:shadow-neo transition-all group relative overflow-hidden h-full flex flex-col justify-between"
+                "p-5 rounded-2xl border-4 border-border bg-background shadow-neo-sm hover:shadow-neo transition-all group relative overflow-hidden h-full flex flex-col justify-between"
             )}
           >
             {/* Background Accent */}
@@ -63,11 +63,11 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
 
             <div className="space-y-4 relative z-10">
               <div className="flex items-center justify-between">
-                <div className={cn("p-2.5 rounded-xl border-2 border-black shadow-neo-sm transition-transform group-hover:rotate-[-5deg]", styles.bg)}>
+                <div className={cn("p-2.5 rounded-xl border-2 border-border shadow-neo-sm transition-transform group-hover:rotate-[-5deg]", styles.bg)}>
                   {getIcon(insight.type)}
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                    <span className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border-2 border-black bg-white shadow-neo-sm", styles.border)}>
+                    <span className={cn("text-[8px] font-black  tracking-widest px-2 py-0.5 rounded-full border-2 border-border bg-background shadow-neo-sm", styles.border)}>
                         {styles.label}
                     </span>
                     {insight.score && insight.score >= 8 && (
@@ -80,17 +80,17 @@ export default function InsightsPanel({ data, orientation = "horizontal" }: { da
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-black/30 group-hover:text-black/50 transition-colors">
+                <h4 className="font-black text-[10px] tracking-[0.2em] text-foreground/30 group-hover:text-foreground/50 transition-colors">
                     {insight.title}
                 </h4>
-                <p className="text-sm font-bold text-black leading-snug">
+                <p className="text-sm font-bold text-foreground leading-snug">
                   {renderDescription(insight.description)}
                 </p>
               </div>
             </div>
 
             {/* Bottom Accent Line */}
-            <div className={cn("mt-4 h-1 w-full rounded-full border border-black/10", styles.light)}>
+            <div className={cn("mt-4 h-1 w-full rounded-full border border-border/10", styles.light)}>
                 <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}

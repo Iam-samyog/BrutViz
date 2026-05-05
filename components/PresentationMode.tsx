@@ -64,7 +64,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center overflow-hidden font-inter"
+                className="fixed inset-0 z-[1000] bg-foreground flex flex-col items-center justify-center overflow-hidden font-inter"
             >
                 {/* Dynamic Background Pattern */}
                 <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
@@ -80,7 +80,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
                 {/* Header Context */}
                 <div className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2 md:gap-4 z-50">
-                    <div className="p-2 md:p-3 bg-primary text-white border-2 md:border-4 border-white rounded-xl md:rounded-2xl shadow-neo-sm rotate-[-3deg]">
+                    <div className="p-2 md:p-3 bg-primary text-background border-2 md:border-4 border-background rounded-xl md:rounded-2xl shadow-neo-sm rotate-[-3deg]">
                         <LayoutDashboard className="w-5 h-5 md:w-8 md:h-8" />
                     </div>
                     <div className="hidden sm:block">
@@ -90,7 +90,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
                 <button 
                     onClick={onClose}
-                    className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-4 bg-white border-2 md:border-4 border-black rounded-xl md:rounded-2xl shadow-neo-sm md:shadow-neo hover:translate-y-[2px] transition-all z-50 group active:scale-95"
+                    className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-4 bg-background border-2 md:border-4 border-border rounded-xl md:rounded-2xl shadow-neo-sm md:shadow-neo hover:translate-y-[2px] transition-all z-50 group active:scale-95"
                 >
                     <X className="w-5 h-5 md:w-8 md:h-8 group-hover:rotate-90 transition-transform" />
                 </button>
@@ -109,8 +109,8 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                     className={cn(
                                         "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 whitespace-nowrap shrink-0",
                                         !selectedCategory 
-                                            ? "bg-white text-black border-white shadow-[4px_4px_0px_0px_#22c55e]" 
-                                            : "bg-transparent text-white/40 border-white/20 hover:border-white hover:text-white"
+                                            ? "bg-background text-foreground border-background shadow-[4px_4px_0px_0px_#22c55e]" 
+                                            : "bg-transparent text-background/40 border-background/20 hover:border-background hover:text-background"
                                     )}
                                 >
                                     🌍 VIEW ALL DATA
@@ -118,16 +118,16 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                 
                                 {categories.map((cat) => (
                                     <React.Fragment key={cat.column}>
-                                        <div className="h-8 w-[2px] bg-white/20 shrink-0 mx-2" />
+                                        <div className="h-8 w-[2px] bg-background/20 shrink-0 mx-2" />
                                         {cat.topValues.map((v, i) => (
                                             <button 
                                                 key={`${cat.column}-${i}`}
                                                 onClick={() => setSelectedCategory({ col: cat.column, val: v.value })}
                                                 className={cn(
-                                                    "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95 uppercase whitespace-nowrap shrink-0",
+                                                    "px-8 py-3 rounded-2xl border-4 font-black text-sm transition-all shadow-neo-sm transform hover:scale-105 active:scale-95  whitespace-nowrap shrink-0",
                                                     selectedCategory?.val === v.value 
-                                                        ? "bg-primary text-white border-primary shadow-[4px_4px_0px_0px_#ffffff]" 
-                                                        : " text-white/40  hover:border-white hover:text-white"
+                                                        ? "bg-primary text-background border-primary shadow-[4px_4px_0px_0px_#ffffff]" 
+                                                        : " text-background/40  hover:border-background hover:text-background"
                                                 )}
                                             >
                                                 {v.value}
@@ -150,10 +150,10 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                 className="w-full h-full flex flex-col items-center justify-center min-h-0"
                             >
                                 <div className="text-center mb-6">
-                                    <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] text-white">
+                                    <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter italic leading-[0.8] text-background">
                                         {selectedCategory ? (
                                             <>
-                                                <span className="text-primary  decoration-white/20">{selectedCategory.val}</span>
+                                                <span className="text-primary decoration-white/20">{selectedCategory.val}</span>
                                             </>
                                         ) : (
                                             <>
@@ -164,7 +164,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                     </h2>
                                 </div>
  
-                                <div className="w-full flex-1 bg-white border-4 md:border-[8px] border-black rounded-2xl md:rounded-[2.5rem] shadow-[10px_10px_0px_0px_#22c55e] md:shadow-[20px_20px_0px_0px_#22c55e] p-3 md:p-8 min-h-0 overflow-hidden relative group">
+                                <div className="w-full flex-1 bg-background border-4 md:border-[8px] border-border rounded-2xl md:rounded-[2.5rem] shadow-[10px_10px_0px_0px_#22c55e] md:shadow-[20px_20px_0px_0px_#22c55e] p-3 md:p-8 min-h-0 overflow-hidden relative group">
                                     <ChartGenerator 
                                         data={filteredData} 
                                         isStatic={true} 
@@ -184,19 +184,19 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                         <div className="flex items-center gap-4">
                             <button 
                                 onClick={prevSlide}
-                                className="p-4 bg-white border-4 border-black rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
+                                className="p-4 bg-background border-4 border-border rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
                             >
                                 <ChevronLeft className="w-8 h-8" />
                             </button>
 
-                            <div className="flex gap-2 p-3 bg-white border-4 border-black rounded-2xl shadow-neo min-w-[120px] justify-center">
+                            <div className="flex gap-2 p-3 bg-background border-4 border-border rounded-2xl shadow-neo min-w-[120px] justify-center">
                                 {SLIDE_TYPES.map((_, i) => (
                                     <button 
                                         key={i}
                                         onClick={() => setCurrentSlide(i)}
                                         className={cn(
-                                            "h-3 rounded-full transition-all duration-300 border-2 border-black",
-                                            currentSlide === i ? "w-10 bg-primary" : "w-3 bg-black/10 hover:bg-black/20"
+                                            "h-3 rounded-full transition-all duration-300 border-2 border-border",
+                                            currentSlide === i ? "w-10 bg-primary" : "w-3 bg-foreground/10 hover:bg-foreground/20"
                                         )}
                                     />
                                 ))}
@@ -204,20 +204,20 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
 
                             <button 
                                 onClick={nextSlide}
-                                className="p-4 bg-white border-4 border-black rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
+                                className="p-4 bg-background border-4 border-border rounded-2xl shadow-neo hover:translate-y-[2px] active:scale-95 transition-all"
                             >
                                 <ChevronRight className="w-8 h-8" />
                             </button>
                         </div>
 
                         {/* Axis Controls */}
-                        <div className="flex flex-wrap items-center gap-4 p-4 bg-black/40 backdrop-blur-md border-2 border-white/20 rounded-[2rem]">
+                        <div className="flex flex-wrap items-center gap-4 p-4 bg-foreground/40 backdrop-blur-md border-2 border-background/20 rounded-[2rem]">
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Dimension (X)</span>
+                                <span className="text-[10px] font-black text-background/50 tracking-widest">Dimension (X)</span>
                                 <select 
                                     value={customXAxis}
                                     onChange={(e) => setCustomXAxis(e.target.value)}
-                                    className="bg-white border-2 border-black rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
+                                    className="bg-background border-2 border-border rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
                                 >
                                     {categoricalKeys.concat(numericKeys).map(k => (
                                         <option key={k} value={k}>{k}</option>
@@ -225,14 +225,14 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                                 </select>
                             </div>
 
-                            <div className="w-[1px] h-6 bg-white/10" />
+                            <div className="w-[1px] h-6 bg-background/10" />
 
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Measure (Y)</span>
+                                <span className="text-[10px] font-black text-background/50 tracking-widest">Measure (Y)</span>
                                 <select 
                                     value={customYAxis}
                                     onChange={(e) => setCustomYAxis(e.target.value)}
-                                    className="bg-white border-2 border-black rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
+                                    className="bg-background border-2 border-border rounded-lg px-3 py-1.5 font-bold text-xs shadow-neo-sm outline-none cursor-pointer"
                                 >
                                     {numericKeys.map(k => (
                                         <option key={k} value={k}>{k}</option>
@@ -244,7 +244,7 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({ data, isOpen
                 </div>
 
                 {/* Progress bar at the very bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-2 bg-white/10 overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-2 bg-background/10 overflow-hidden">
                     <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${((currentSlide + 1) / SLIDE_TYPES.length) * 100}%` }}

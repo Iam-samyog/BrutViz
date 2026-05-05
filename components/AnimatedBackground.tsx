@@ -37,7 +37,7 @@ export default function AnimatedBackground({ count = 40, opacity = 0.15 }: Anima
                             y: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.6 },
                             x: { duration: duration, repeat: Infinity, ease: "easeInOut", delay: delay + 0.6 }
                         }}
-                        className={`absolute rounded-full border border-black/10 ${color}`}
+                        className={`absolute rounded-full border border-border/10 ${color}`}
                         style={{ 
                             top, 
                             left, 

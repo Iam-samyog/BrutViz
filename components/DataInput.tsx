@@ -152,7 +152,7 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="max-w-4xl mx-auto space-y-6 py-4 px-4"
     >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 sticky top-0  backdrop-blur-sm z-10 p-2 rounded-[2rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 sticky top-0 backdrop-blur-sm z-10 p-2 rounded-[2rem]">
             {/* Drop Zone */}
             <div 
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -162,7 +162,7 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
                     "relative h-[280px] md:h-[350px] flex flex-col items-center justify-center border-[4px] md:border-[6px] border-dashed rounded-[2rem] md:rounded-[3rem] transition-all cursor-pointer group overflow-hidden",
                     isDragging 
                         ? "border-primary bg-primary/5 scale-[1.01] md:scale-[1.02]" 
-                        : "border-black/20 hover:border-black/40 bg-white"
+                        : "border-border/20 hover:border-border/40 bg-background"
                 )}
                 onClick={() => fileInputRef.current?.click()}
             >
@@ -174,14 +174,14 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
                 />
                 
                 <div className="relative z-10 flex flex-col items-center text-center px-6 space-y-6">
-                    <div className="p-6 bg-black text-white rounded-[2rem] shadow-neo group-hover:rotate-6 transition-transform group-hover:scale-110">
+                    <div className="p-6 bg-foreground text-background rounded-[2rem] shadow-neo group-hover:rotate-6 transition-transform group-hover:scale-110">
                         <Upload className="w-12 h-12" />
                     </div>
                     <div className="space-y-2">
-                        <p className="text-2xl font-black uppercase italic tracking-tight">Drop Files Here</p>
-                        <p className="text-sm font-bold text-black/40 uppercase tracking-widest">CSV • JSON • XLSX</p>
+                        <p className="text-2xl font-black italic tracking-tight">Drop Files Here</p>
+                        <p className="text-sm font-bold text-foreground/40 tracking-widest">CSV • JSON • XLSX</p>
                     </div>
-                    <button className="px-8 py-3 bg-white border-4 border-black font-black uppercase tracking-widest text-xs shadow-neo-sm hover:translate-y-1 hover:shadow-neo-xs transition-all">
+                    <button className="px-8 py-3 bg-background border-4 border-border font-black tracking-widest text-xs shadow-neo-sm hover:translate-y-1 hover:shadow-neo-xs transition-all">
                         Browse Files
                     </button>
                 </div>
@@ -195,28 +195,28 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
             </div>
 
             {/* Paste Data */}
-            <div className="relative h-[350px] flex flex-col bg-white border-4 border-black rounded-[3rem] shadow-neo-lg overflow-hidden group">
-                <div className="p-5 border-b-4 border-black bg-black text-white flex items-center justify-between">
+            <div className="relative h-[350px] flex flex-col bg-background border-4 border-border rounded-[3rem] shadow-neo-lg overflow-hidden group">
+                <div className="p-5 border-b-4 border-border bg-foreground text-background flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary rounded-lg">
-                            <FileText className="w-4 h-4 text-white" />
+                            <FileText className="w-4 h-4 text-background" />
                         </div>
-                        <span className="font-black uppercase tracking-widest text-xs italic">Raw Snippet</span>
+                        <span className="font-black tracking-widest text-xs italic">Raw Snippet</span>
                     </div>
                 </div>
                 
                 <textarea 
-                    className="flex-1 p-6 font-mono text-sm bg-transparent outline-none resize-none placeholder:text-black/20 font-bold"
+                    className="flex-1 p-6 font-mono text-sm bg-transparent outline-none resize-none placeholder:text-foreground/20 font-bold"
                     placeholder={`Name,Sales,Region\nApple,100,North\nOrange,150,South...`}
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                 />
                 
-                <div className="p-5 border-t-4 border-black bg-gray-50">
+                <div className="p-5 border-t-4 border-border bg-gray-50">
                     <button 
                         disabled={!textInput.trim()}
                         onClick={handlePaste}
-                        className="w-full py-4 bg-primary text-white border-4 border-black rounded-2xl font-black uppercase tracking-widest text-sm shadow-neo-sm hover:translate-y-1 hover:shadow-neo-xs transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-neo-sm active:shadow-none active:translate-y-2"
+                        className="w-full py-4 bg-primary text-background border-4 border-border rounded-2xl font-black tracking-widest text-sm shadow-neo-sm hover:translate-y-1 hover:shadow-neo-xs transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-neo-sm active:shadow-none active:translate-y-2"
                     >
                         Analyze Snippet
                     </button>
@@ -235,14 +235,14 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
                 >
                     <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                     <div className="flex-1">
-                        <p className="font-black text-destructive text-sm uppercase tracking-tight mb-1">Error</p>
-                        <p className="text-sm font-bold text-black/80">{error}</p>
+                        <p className="font-black text-destructive text-sm tracking-tight mb-1">Error</p>
+                        <p className="text-sm font-bold text-foreground/80">{error}</p>
                     </div>
                     <button
                         onClick={() => setError(null)}
-                        className="shrink-0 p-1 hover:bg-black/5 rounded-lg transition-colors"
+                        className="shrink-0 p-1 hover:bg-foreground/5 rounded-lg transition-colors"
                     >
-                        <X className="w-4 h-4 text-black/60" />
+                        <X className="w-4 h-4 text-foreground/60" />
                     </button>
                 </motion.div>
             )}
