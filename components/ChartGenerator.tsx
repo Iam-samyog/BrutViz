@@ -23,6 +23,10 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  Treemap,
 } from "recharts";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -32,7 +36,7 @@ import { generateForecast } from "@/lib/insights";
 interface ChartGeneratorProps {
   data: any[];
   isStatic?: boolean;
-  forcedChartType?: "bar" | "line" | "area" | "pie" | "radar" | "kp";
+  forcedChartType?: "bar" | "line" | "area" | "pie" | "radar" | "kp" | "treemap" | "scatter" | "bubble";
   forcedXAxis?: string;
   forcedYAxis?: string;
   forcedShowForecast?: boolean;
@@ -147,7 +151,7 @@ export default function ChartGenerator({
 }: ChartGeneratorProps) {
   const COLORS = colorPalette && colorPalette.length > 0 ? colorPalette : DEFAULT_COLORS;
 
-  const [chartTypeState, setChartType] = useState<"bar" | "line" | "area" | "pie">("bar");
+  const [chartTypeState, setChartType] = useState<"bar" | "line" | "area" | "pie" | "radar" | "kp" | "treemap" | "scatter" | "bubble">("bar");
   const chartType = forcedChartType || chartTypeState;
 
   const [xAxisKeyOverride, setXAxisKey] = useState<string>("");
@@ -216,8 +220,173 @@ export default function ChartGenerator({
     );
   }
 
+  // Heatmap: pure div grid, rendered outside ResponsiveContainer
+  const renderHeatmap = () => {
+    const xCats = Array.from(new Set(chartData.map(r => String(r[xAxisKey] ?? '')))).slice(0, 14);
+    const yKeys = numericKeys.slice(0, 7);
+    const cells: Record<string, Record<string, number>> = {};
+    yKeys.forEach(k => { cells[k] = {}; xCats.forEach(c => { cells[k][c] = 0; }); });
+    chartData.forEach(row => {
+      const cat = String(row[xAxisKey] ?? '');
+      if (!xCats.includes(cat)) return;
+      yKeys.forEach(k => { cells[k][cat] += Number(row[k]) || 0; });
+    });
+    let gMin = Infinity, gMax = -Infinity;
+    yKeys.forEach(k => xCats.forEach(c => { const v = cells[k][c]; if (v < gMin) gMin = v; if (v > gMax) gMax = v; }));
+    const range = gMax - gMin || 1;
+    const base = COLORS[0];
+    return (
+      <div style={{ width: '100%', height: '100%', padding: '14px 16px 10px', display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `100px repeat(${xCats.length}, 1fr)`, gap: '2px', marginBottom: '6px' }}>
+          <div />
+          {xCats.map(c => (
+            <div key={c} style={{ fontSize: '8px', fontWeight: 800, color: 'rgba(200,200,230,0.55)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c}</div>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px', minHeight: 0 }}>
+          {yKeys.map(key => (
+            <div key={key} style={{ display: 'grid', gridTemplateColumns: `100px repeat(${xCats.length}, 1fr)`, gap: '3px', flex: 1 }}>
+              <div style={{ fontSize: '9px', fontWeight: 800, color: 'rgba(200,200,230,0.7)', display: 'flex', alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: '6px' }}>{key}</div>
+              {xCats.map(cat => {
+                const val = cells[key][cat];
+                const norm = (val - gMin) / range;
+                const alpha = Math.round(norm * 210 + 30).toString(16).padStart(2, '0');
+                return (
+                  <div key={cat} title={`${key} / ${cat}: ${val.toLocaleString()}`}
+                    style={{ borderRadius: '4px', background: `${base}${alpha}`, border: '1px solid rgba(255,255,255,0.04)' }}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+          <span style={{ fontSize: '8px', fontWeight: 700, color: 'rgba(200,200,230,0.4)' }}>{gMin.toLocaleString()}</span>
+          <div style={{ flex: 1, height: '6px', borderRadius: '99px', background: `linear-gradient(to right, ${base}1e, ${base}ff)` }} />
+          <span style={{ fontSize: '8px', fontWeight: 700, color: 'rgba(200,200,230,0.4)' }}>{gMax.toLocaleString()}</span>
+        </div>
+      </div>
+    );
+  };
+
   const renderChart = () => {
     switch (chartType) {
+      case "treemap": {
+        const tKey = yAxisKeys[0] || numericKeys[0] || '';
+        // Aggregate data for Treemap
+        const aggregated = chartData.reduce((acc: any, row) => {
+          const name = String(row[xAxisKey] ?? 'Unknown');
+          const value = Number(row[tKey]) || 0;
+          if (!acc[name]) acc[name] = 0;
+          acc[name] += value;
+          return acc;
+        }, {});
+
+        const tmData = Object.entries(aggregated).map(([name, value]) => ({
+          name,
+          value,
+        })).sort((a, b) => (b.value as number) - (a.value as number)).slice(0, 15);
+
+        return (
+          <Treemap
+            data={tmData}
+            dataKey="value"
+            aspectRatio={4 / 3}
+            stroke="rgba(255,255,255,0.1)"
+            fill="#8884d8"
+            isAnimationActive={!isStatic}
+            content={(props: any) => {
+              const { x, y, width, height, index, name, value } = props;
+              const color = COLORS[index % COLORS.length];
+              return (
+                <g>
+                  <rect
+                    x={x}
+                    y={y}
+                    width={width}
+                    height={height}
+                    style={{
+                      fill: color,
+                      fillOpacity: 0.8,
+                      stroke: 'rgba(255,255,255,0.1)',
+                      strokeWidth: 1,
+                    }}
+                  />
+                  {width > 40 && height > 30 && (
+                    <text
+                      x={x + width / 2}
+                      y={y + height / 2}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="#fff"
+                      fontSize={Math.min(width / 6, 11)}
+                      fontWeight={800}
+                      style={{ pointerEvents: 'none', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
+                    >
+                      {name}
+                    </text>
+                  )}
+                </g>
+              );
+            }}
+          >
+            <Tooltip content={<CustomTooltip />} />
+          </Treemap>
+        );
+      }
+
+      case "scatter": {
+        const sxKey = numericKeys[0] || '';
+        const syKey = numericKeys[1] || numericKeys[0] || '';
+        const scatCats = Array.from(new Set(chartData.map(r => String(r[xAxisKey] ?? '')))).slice(0, 6);
+        return (
+          <ScatterChart margin={{ top: 16, right: 24, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+            <XAxis type="number" dataKey={sxKey} axisLine={false} tickLine={false} tick={TICK_STYLE} name={sxKey} />
+            <YAxis type="number" dataKey={syKey} axisLine={false} tickLine={false} tick={TICK_STYLE} width={50} name={syKey} />
+            <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3', stroke: 'rgba(255,255,255,0.1)' }} />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 800, color: 'rgba(200,200,230,0.8)' }} />
+            {scatCats.map((cat, i) => (
+              <Scatter
+                key={cat}
+                name={cat}
+                data={chartData.filter(r => String(r[xAxisKey]) === cat)}
+                fill={COLORS[i % COLORS.length]}
+                fillOpacity={0.8}
+                isAnimationActive={!isStatic}
+              />
+            ))}
+          </ScatterChart>
+        );
+      }
+
+      case "bubble": {
+        const xKey = numericKeys[0] || '';
+        const yKey = numericKeys[1] || numericKeys[0] || '';
+        const zKey = numericKeys[2] || numericKeys[0] || '';
+        const categories = Array.from(new Set(chartData.map(r => String(r[xAxisKey] ?? '')))).slice(0, 6);
+        return (
+          <ScatterChart margin={{ top: 16, right: 24, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+            <XAxis type="number" dataKey={xKey} axisLine={false} tickLine={false} tick={TICK_STYLE} name={xKey} label={{ value: xKey, position: 'insideBottom', offset: -2, fontSize: 9, fontWeight: 800, fill: 'rgba(200,200,230,0.4)' }} />
+            <YAxis type="number" dataKey={yKey} axisLine={false} tickLine={false} tick={TICK_STYLE} width={50} name={yKey} />
+            <ZAxis type="number" dataKey={zKey} range={[40, 500]} name={zKey} />
+            <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3', stroke: 'rgba(255,255,255,0.1)' }} />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 800, color: 'rgba(200,200,230,0.8)' }} />
+            {categories.map((cat, i) => (
+              <Scatter
+                key={cat}
+                name={cat}
+                data={chartData.filter(r => String(r[xAxisKey]) === cat)}
+                fill={COLORS[i % COLORS.length]}
+                fillOpacity={0.75}
+                isAnimationActive={!isStatic}
+              />
+            ))}
+          </ScatterChart>
+        );
+      }
+
       case "radar": {
         const radarKeys = numericKeys.slice(0, 6);
         const radarData = radarKeys.map((key) => {
@@ -523,37 +692,25 @@ export default function ChartGenerator({
         </div>
       )}
 
-      {!hideChart && (
-        isStatic ? (
-          <div
-            className={cn(
-              fullHeight
-                ? "flex-1 min-h-0 w-full"
-                : "w-full border-2 border-border rounded-xl p-6 bg-background shadow-neo transition-all hover:shadow-neo-lg h-[500px]"
-            )}
-          >
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              {renderChart()}
-            </ResponsiveContainer>
-          </div>
+      {!hideChart && (() => {
+        const baseClass = cn(
+          fullHeight
+            ? "flex-1 min-h-0 w-full overflow-hidden"
+            : "w-full border-2 border-border rounded-xl p-6 bg-background shadow-neo transition-all hover:shadow-neo-lg h-[500px]"
+        );
+        const content = (chartType === 'heatmap' as string) ? renderHeatmap() : (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            {renderChart()}
+          </ResponsiveContainer>
+        );
+        return isStatic ? (
+          <div className={baseClass}>{content}</div>
         ) : (
-          <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className={cn(
-              fullHeight
-                ? "flex-1 min-h-0 w-full"
-                : "w-full border-2 border-border rounded-xl p-6 bg-background shadow-neo transition-all hover:shadow-neo-lg h-[500px]"
-            )}
-          >
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              {renderChart()}
-            </ResponsiveContainer>
+          <motion.div layout initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} className={baseClass}>
+            {content}
           </motion.div>
-        )
-      )}
+        );
+      })()}
     </div>
   );
 }

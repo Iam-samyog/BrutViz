@@ -23,18 +23,12 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
       if (type === "json") {
         const data = JSON.parse(content);
         let arrayData: any[] | null = null;
-        
-        // If it's directly an array, use it
         if (Array.isArray(data)) {
           arrayData = data;
-        } 
-        // If it's an object, try to find an array property
-        else if (typeof data === "object" && data !== null) {
-          // Find the first property that is an array
+        } else if (typeof data === "object" && data !== null) {
           const keys = Object.keys(data);
           let largestArray: any[] | null = null;
           let largestSize = 0;
-          
           for (const key of keys) {
             const value = data[key];
             if (Array.isArray(value) && value.length > largestSize) {
@@ -42,14 +36,26 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
               largestSize = value.length;
             }
           }
-          
-          if (largestArray) {
-            arrayData = largestArray;
-          }
+          if (largestArray) arrayData = largestArray;
         }
-        
+
+        const flattenObject = (obj: any, prefix = ''): any => {
+          return Object.keys(obj).reduce((acc: any, k) => {
+            const pre = prefix.length ? prefix + '_' : '';
+            if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
+              Object.assign(acc, flattenObject(obj[k], pre + k));
+            } else {
+              acc[pre + k] = obj[k];
+            }
+            return acc;
+          }, {});
+        };
+
         if (arrayData && arrayData.length > 0) {
-          onDataParsed(arrayData, name || "data.json");
+          const flattenedData = arrayData.map(item => 
+            typeof item === 'object' && item !== null ? flattenObject(item) : { value: item }
+          );
+          onDataParsed(flattenedData, name || "data.json");
         } else {
           setError("JSON must contain an array of objects. Found object with no array properties.");
         }

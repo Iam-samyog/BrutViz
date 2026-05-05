@@ -51,7 +51,7 @@ export default function Dashboard() {
   const [isPresentationModeOpen, setIsPresentationModeOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState("");
-  const [currentExportPage, setCurrentExportPage] = useState<{ type: 'cover' | 'analysis_1' | 'analysis_2', catKey?: string, numKey?: string } | null>(null);
+  const [currentExportPage, setCurrentExportPage] = useState<{ type: 'cover' | 'analysis_1' | 'analysis_2' | 'analysis_3', catKey?: string, numKey?: string } | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
   const [isInsightsOpen, setIsInsightsOpen] = useState(true);
 
@@ -140,11 +140,22 @@ export default function Dashboard() {
     }
   };
 
+  const [dataSummary, setDataSummary] = useState<{ rows: number, cols: number } | null>(null);
+
   const handleDataParsed = (parsedData: any[], name: string = "data.csv") => {
     setData(parsedData);
     setFileName(name);
     setTransformedData(null);
     saveToHistory(parsedData, name);
+    
+    if (parsedData && parsedData.length > 0) {
+      setDataSummary({
+        rows: parsedData.length,
+        cols: Object.keys(parsedData[0]).length
+      });
+      // Auto-hide summary after 5 seconds
+      setTimeout(() => setDataSummary(null), 5000);
+    }
   };
 
   const handleHistorySelect = (item: any) => {
@@ -228,7 +239,7 @@ export default function Dashboard() {
       
       try {
           // 1. Calculate all pages needed
-          const pagesToExport: Array<{ type: 'cover' | 'analysis_1' | 'analysis_2', catKey?: string, numKey?: string }> = [
+          const pagesToExport: Array<{ type: 'cover' | 'analysis_1' | 'analysis_2' | 'analysis_3', catKey?: string, numKey?: string }> = [
               { type: 'cover' }
           ];
 
@@ -249,8 +260,10 @@ export default function Dashboard() {
                       if (catKey !== numKey || limitedCatKeys.length === 0) {
                            // PAGE A: Bar + Line
                            pagesToExport.push({ type: 'analysis_1', catKey, numKey });
-                           // PAGE B: Pie + Stats
+                           // PAGE B: Pie + Radar
                            pagesToExport.push({ type: 'analysis_2', catKey, numKey });
+                           // PAGE C: Heatmap + Bubble
+                           pagesToExport.push({ type: 'analysis_3', catKey, numKey });
                       }
                   });
               });
@@ -433,6 +446,39 @@ export default function Dashboard() {
                         No signups. No hazzle. Just data.
                     </p>
                 </div>
+
+                <AnimatePresence>
+                    {dataSummary && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] px-8 py-4 bg-foreground text-background rounded-2xl shadow-2xl border-4 border-border flex items-center gap-6"
+                        >
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Data Loaded</span>
+                                <span className="text-xl font-black italic">{fileName}</span>
+                            </div>
+                            <div className="h-10 w-[2px] bg-background/20" />
+                            <div className="flex items-center gap-4">
+                                <div className="text-center">
+                                    <p className="text-2xl font-black">{dataSummary.rows}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-tighter opacity-50 text-primary">Rows</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-black">{dataSummary.cols}</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-tighter opacity-50 text-secondary">Columns</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setDataSummary(null)}
+                                className="ml-4 p-2 hover:bg-background/10 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 
                 <div className="relative">
                     <div className="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-3xl -z-10" />
@@ -448,9 +494,7 @@ export default function Dashboard() {
                                     dynamicTyping: true,
                                     skipEmptyLines: true,
                                     complete: (results) => {
-                                        setData(results.data);
-                                        setFileName("demo_data.csv");
-                                        saveToHistory(results.data, "demo_data.csv");
+                                        handleDataParsed(results.data, "demo_data.csv");
                                     }
                                 });
                             }}
@@ -928,6 +972,61 @@ export default function Dashboard() {
                                         />
                                     </div>
                                 </div>
+                            </div>{/* end LINE + AREA space-y-5 */}
+
+                            {/* TREEMAP + BUBBLE ROW */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                {/* Treemap Chart */}
+                                <div
+                                    className="rounded-2xl overflow-hidden h-[480px] relative"
+                                    style={{
+                                        background: "linear-gradient(145deg, #0a0a1a 0%, #0c0c2a 100%)",
+                                        border: "1px solid rgba(139,92,246,0.25)",
+                                        boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    }}
+                                >
+                                    <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6)" }} />
+                                    <div className="absolute top-3 left-4 z-10 flex items-center gap-3">
+                                        <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: "rgba(167,139,250,0.6)" }}>Treemap Chart</span>
+                                    </div>
+                                    <div className="h-full pt-8">
+                                        <ChartGenerator
+                                            data={activeData}
+                                            forcedChartType="treemap"
+                                            hideConfig={true}
+                                            fullHeight={true}
+                                            forcedXAxis={chartConfig.xAxis}
+                                            forcedYAxis={chartConfig.yAxis}
+                                            colorPalette={['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Bubble Chart */}
+                                <div
+                                    className="rounded-2xl overflow-hidden h-[480px] relative"
+                                    style={{
+                                        background: "linear-gradient(145deg, #050f15 0%, #081218 100%)",
+                                        border: "1px solid rgba(6,182,212,0.25)",
+                                        boxShadow: "0 0 0 1px rgba(6,182,212,0.1), 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                    }}
+                                >
+                                    <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #06b6d4, #3b82f6, #6366f1)" }} />
+                                    <div className="absolute top-3 left-4 z-10">
+                                        <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: "rgba(103,232,249,0.6)" }}>Bubble Chart</span>
+                                    </div>
+                                    <div className="h-full pt-8">
+                                        <ChartGenerator
+                                            data={activeData}
+                                            forcedChartType="bubble"
+                                            hideConfig={true}
+                                            fullHeight={true}
+                                            forcedXAxis={chartConfig.xAxis}
+                                            forcedYAxis={chartConfig.yAxis}
+                                            colorPalette={['#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#10b981']}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1053,14 +1152,14 @@ export default function Dashboard() {
         }}
       >
         {isExporting && currentExportPage && (
-            <div id="single-export-page" className="bg-background border-b-8 border-border">
+            <div id="single-export-page" className="bg-[#0f0f1a] text-white border-b-8 border-border">
                 {currentExportPage.type === 'cover' ? (
                     // --- COVER PAGE RENDER (Full Height allowed) ---
-                    <div className="p-12 space-y-8 min-h-[1600px]">
-                        <div className="flex items-center justify-between pb-8 border-b-4 border-border">
+                    <div className="p-12 space-y-8 min-h-[1600px] bg-[#0f0f1a]">
+                        <div className="flex items-center justify-between pb-8 border-b-4 border-white/10">
                             <div className="space-y-2">
-                                <h1 className="text-5xl font-black tracking-tight">{fileName}</h1>
-                                <p className="text-xl font-bold text-gray-500">{new Date().toLocaleDateString()} | Automated Analysis</p>
+                                <h1 className="text-5xl font-black tracking-tight text-white">{fileName}</h1>
+                                <p className="text-xl font-bold text-gray-400">{new Date().toLocaleDateString()} | Automated Analysis</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="p-4 bg-primary text-background rounded-xl border-4 border-border shadow-neo">
@@ -1070,7 +1169,7 @@ export default function Dashboard() {
                         </div>
                         
                         <div className="space-y-6">
-                            <h2 className="text-3xl font-black flex items-center gap-3 bg-foreground text-background p-4 rounded-xl shadow-neo-sm inline-block">
+                            <h2 className="text-3xl font-black flex items-center gap-3 bg-white/5 text-white p-4 rounded-xl border-2 border-white/10 shadow-neo-sm inline-block">
                                 <ArrowUpDown className="w-6 h-6" /> Key AI Insights
                             </h2>
                             {(() => {
@@ -1078,13 +1177,13 @@ export default function Dashboard() {
                                 return (
                                     <div className="grid grid-cols-2 gap-4">
                                         {insights.map((insight: any, idx: number) => (
-                                            <div key={idx} className="p-5 rounded-xl border-2 border-border bg-background shadow-neo-sm">
+                                            <div key={idx} className="p-5 rounded-xl border-2 border-white/10 bg-white/5 shadow-neo-sm">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="p-2 rounded-lg border-2 border-border bg-primary/10">
-                                                        {insight.type === 'correlation' && <ArrowUpDown className="w-4 h-4" />}
-                                                        {insight.type === 'outlier' && <AlertCircle className="w-4 h-4" />}
-                                                        {insight.type === 'summary' && <FileText className="w-4 h-4" />}
-                                                        {insight.type === 'distribution' && <BarChart3 className="w-4 h-4" />}
+                                                    <div className="p-2 rounded-lg border-2 border-white/10 bg-primary/20">
+                                                        {insight.type === 'correlation' && <ArrowUpDown className="w-4 h-4 text-primary" />}
+                                                        {insight.type === 'outlier' && <AlertCircle className="w-4 h-4 text-primary" />}
+                                                        {insight.type === 'summary' && <FileText className="w-4 h-4 text-primary" />}
+                                                        {insight.type === 'distribution' && <BarChart3 className="w-4 h-4 text-primary" />}
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="flex items-center justify-between mb-1">
@@ -1097,7 +1196,7 @@ export default function Dashboard() {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <p className="text-sm font-bold text-foreground leading-snug">
+                                                        <p className="text-sm font-bold text-white leading-snug">
                                                             {insight.description.replace(/\*\*/g, '')}
                                                         </p>
                                                     </div>
@@ -1109,37 +1208,45 @@ export default function Dashboard() {
                             })()}
                         </div>
 
-                        <div className="mt-12 p-8 bg-blue-50 border-4 border-blue-500 rounded-2xl border-dashed text-center space-y-2">
-                            <p className="text-2xl font-black text-blue-600">Report Contents</p>
-                            <p className="text-lg font-bold text-blue-400">Comprehensive Visual Analysis on following pages</p>
+                        <div className="mt-12 p-8 bg-primary/10 border-4 border-primary/30 rounded-2xl border-dashed text-center space-y-2">
+                            <p className="text-2xl font-black text-primary">Report Contents</p>
+                            <p className="text-lg font-bold text-primary/60">Comprehensive Visual Analysis on following pages</p>
                         </div>
                     </div>
                 ) : currentExportPage.type === 'analysis_1' ? (
                     // --- ANALYSIS PAGE 1: COMPARISON & TRENDS (Bar + Line) ---
-                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col"> 
-                         <div className="flex items-center justify-between border-b-4 border-border pb-6">
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]"> 
+                         <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
                             <div className="flex items-baseline gap-4">
-                                <h3 className="text-4xl font-black text-foreground tracking-tight bg-primary/20 px-4 py-2 rounded-xl">
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
                                     {currentExportPage.catKey}
                                 </h3>
-                                <span className="text-gray-400 font-black italic text-2xl">vs</span>
-                                <h3 className="text-4xl font-black text-foreground tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl">
+                                <span className="text-gray-500 font-black italic text-2xl">vs</span>
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl border border-yellow-400/30">
                                     {currentExportPage.numKey}
                                 </h3>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="px-3 py-1 bg-foreground text-background rounded-full font-bold text-sm">PART 1</span>
-                                <BarChart3 className="w-12 h-12 text-foreground/20" />
+                                <span className="px-3 py-1 bg-white/10 text-white rounded-full font-bold text-sm border border-white/20">PART 1</span>
+                                <BarChart3 className="w-12 h-12 text-white/10" />
                             </div>
                         </div>
 
                         {/* CHART 1: DIRECT COMPARISON (TOP HALF) */}
                         <div className="space-y-4 flex-1">
                             <div className="flex items-center gap-3">
-                                <span className="w-8 h-8 bg-foreground text-background flex items-center justify-center rounded-lg font-black text-sm">1</span>
-                                <p className="text-xl font-black tracking-widest text-foreground/60">Direct Comparison</p>
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">1</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Direct Comparison</p>
                             </div>
-                            <div className="h-[550px] border-4 border-border rounded-3xl overflow-hidden bg-background shadow-neo-lg">
+                            <div 
+                                className="h-[550px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #0f0f1a 0%, #12121f 100%)",
+                                    border: "1px solid rgba(99,102,241,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #6366f1, #ec4899)" }} />
                                 <ChartGenerator 
                                     data={activeData} 
                                     isStatic={true} 
@@ -1147,17 +1254,26 @@ export default function Dashboard() {
                                     forcedXAxis={currentExportPage.catKey} 
                                     forcedYAxis={currentExportPage.numKey} 
                                     hideConfig={true} 
+                                    fullHeight={true}
                                 />
                             </div>
                         </div>
 
                         {/* CHART 2: TREND ANALYSIS (BOTTOM HALF) */}
-                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-gray-200">
+                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-white/10">
                              <div className="flex items-center gap-3">
-                                <span className="w-8 h-8 bg-foreground text-background flex items-center justify-center rounded-lg font-black text-sm">2</span>
-                                <p className="text-xl font-black tracking-widest text-foreground/60">Trend Analysis</p>
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">2</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Trend Analysis</p>
                             </div>
-                            <div className="h-[550px] border-4 border-border rounded-3xl overflow-hidden bg-background shadow-neo-lg">
+                            <div 
+                                className="h-[550px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #0d0f1a 0%, #10121f 100%)",
+                                    border: "1px solid rgba(59,130,246,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #3b82f6, #6366f1, #a855f7)" }} />
                                 <ChartGenerator 
                                     data={activeData} 
                                     isStatic={true} 
@@ -1165,40 +1281,49 @@ export default function Dashboard() {
                                     forcedXAxis={currentExportPage.catKey} 
                                     forcedYAxis={currentExportPage.numKey} 
                                     hideConfig={true} 
+                                    fullHeight={true}
                                 />
                             </div>
                         </div>
 
                         <div className="pt-8 text-center text-gray-300">
-                            <p className="text-sm font-black tracking-[0.5em]">Vizly Analytics • Page 1/2</p>
+                            <p className="text-sm font-black tracking-[0.5em]">Vizly Analytics • Page 1/3</p>
                         </div>
                     </div>
-                ) : (
-                    // --- ANALYSIS PAGE 2: DISTRIBUTION & STATS (Pie + Summary) ---
-                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col"> 
-                         <div className="flex items-center justify-between border-b-4 border-border pb-6">
+                ) : currentExportPage.type === 'analysis_2' ? (
+                    // --- ANALYSIS PAGE 2: DISTRIBUTION & STATS (Pie + Radar) ---
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]"> 
+                         <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
                             <div className="flex items-baseline gap-4">
-                                <h3 className="text-4xl font-black text-foreground tracking-tight bg-primary/20 px-4 py-2 rounded-xl">
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
                                     {currentExportPage.catKey}
                                 </h3>
-                                <span className="text-gray-400 font-black italic text-2xl">vs</span>
-                                <h3 className="text-4xl font-black text-foreground tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl">
+                                <span className="text-gray-500 font-black italic text-2xl">vs</span>
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl border border-yellow-400/30">
                                     {currentExportPage.numKey}
                                 </h3>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="px-3 py-1 bg-foreground text-background rounded-full font-bold text-sm">PART 2</span>
-                                <BarChart3 className="w-12 h-12 text-foreground/20" />
+                                <span className="px-3 py-1 bg-white/10 text-white rounded-full font-bold text-sm border border-white/20">PART 2</span>
+                                <BarChart3 className="w-12 h-12 text-white/10" />
                             </div>
                         </div>
 
                         {/* CHART 3: DISTRIBUTION (TOP HALF) */}
                         <div className="space-y-4 flex-1">
                             <div className="flex items-center gap-3">
-                                <span className="w-8 h-8 bg-foreground text-background flex items-center justify-center rounded-lg font-black text-sm">3</span>
-                                <p className="text-xl font-black tracking-widest text-foreground/60">Distribution Share</p>
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">3</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Distribution Share</p>
                             </div>
-                            <div className="h-[600px] border-4 border-border rounded-3xl overflow-hidden bg-background shadow-neo-lg">
+                            <div 
+                                className="h-[600px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #1a0f12 0%, #1f1215 100%)",
+                                    border: "1px solid rgba(236,72,153,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #ec4899, #f43f5e)" }} />
                                 <ChartGenerator 
                                     data={activeData} 
                                     isStatic={true} 
@@ -1206,37 +1331,120 @@ export default function Dashboard() {
                                     forcedXAxis={currentExportPage.catKey} 
                                     forcedYAxis={currentExportPage.numKey} 
                                     hideConfig={true} 
+                                    fullHeight={true}
                                 />
                             </div>
                         </div>
 
-                         {/* SUMMARY CARD (BOTTOM HALF) */}
-                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-gray-200">
+                         {/* RADAR CHART (BOTTOM HALF) */}
+                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-white/10">
                              <div className="flex items-center gap-3">
-                                <span className="w-8 h-8 bg-foreground text-background flex items-center justify-center rounded-lg font-black text-sm">4</span>
-                                <p className="text-xl font-black tracking-widest text-foreground/60">Statistical Summary</p>
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">4</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Radar Overview</p>
                             </div>
-                            
-                            <div className="h-[500px] p-8 border-4 border-border rounded-3xl bg-gray-50 flex flex-col justify-center space-y-8">
-                                <div className="grid grid-cols-2 gap-8">
-                                    <div className="p-6 bg-background rounded-2xl border-2 border-border shadow-sm">
-                                        <p className="text-gray-500 font-bold text-sm mb-2">Category</p>
-                                        <p className="text-3xl font-black truncate">{currentExportPage.catKey}</p>
-                                    </div>
-                                    <div className="p-6 bg-background rounded-2xl border-2 border-border shadow-sm">
-                                        <p className="text-gray-500 font-bold text-sm mb-2">Metric</p>
-                                        <p className="text-3xl font-black truncate">{currentExportPage.numKey}</p>
-                                    </div>
-                                </div>
-                                <div className="p-8 bg-blue-50 rounded-2xl border-2 border-blue-200 border-dashed text-center">
-                                    <p className="text-2xl font-black text-blue-400">Detailed Breakdown</p>
-                                    <p className="text-gray-500 mt-2">Refer to the Distribution Chart above for percentage splits.</p>
-                                </div>
+                            <div 
+                                className="h-[560px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #0d1117 0%, #0f131c 100%)",
+                                    border: "1px solid rgba(16,185,129,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #10b981, #3b82f6, #6366f1)" }} />
+                                <ChartGenerator
+                                    data={activeData}
+                                    isStatic={true}
+                                    forcedChartType="radar"
+                                    forcedXAxis={currentExportPage.catKey}
+                                    forcedYAxis={currentExportPage.numKey}
+                                    hideConfig={true}
+                                    fullHeight={true}
+                                    colorPalette={['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6']}
+                                />
                             </div>
                         </div>
 
                         <div className="pt-8 text-center text-gray-300">
-                             <p className="text-sm font-black tracking-[0.5em]">Vizly Analytics • Page 2/2</p>
+                             <p className="text-sm font-black tracking-[0.5em]">Vizly Analytics • Page 2/3</p>
+                        </div>
+                    </div>
+                ) : (
+                    // --- ANALYSIS PAGE 3: HEATMAP & BUBBLE ---
+                    <div className="p-12 space-y-12 w-full min-h-[1600px] flex flex-col bg-[#0f0f1a]">
+                        <div className="flex items-center justify-between border-b-4 border-white/10 pb-6">
+                            <div className="flex items-baseline gap-4">
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-primary/20 px-4 py-2 rounded-xl border border-primary/30">
+                                    {currentExportPage.catKey}
+                                </h3>
+                                <span className="text-gray-500 font-black italic text-2xl">vs</span>
+                                <h3 className="text-4xl font-black text-white tracking-tight bg-yellow-400/20 px-4 py-2 rounded-xl border border-yellow-400/30">
+                                    {currentExportPage.numKey}
+                                </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 bg-white/10 text-white rounded-full font-bold text-sm border border-white/20">PART 3</span>
+                                <BarChart3 className="w-12 h-12 text-white/10" />
+                            </div>
+                        </div>
+
+                        {/* SECTION 5: TREEMAP */}
+                        <div className="space-y-4 flex-1">
+                            <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">5</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Treemap Hierarchy</p>
+                            </div>
+                            <div 
+                                className="h-[550px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #0a0a1a 0%, #0c0c2a 100%)",
+                                    border: "1px solid rgba(139,92,246,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6)" }} />
+                                <ChartGenerator
+                                    data={activeData}
+                                    isStatic={true}
+                                    forcedChartType="treemap"
+                                    forcedXAxis={currentExportPage.catKey}
+                                    forcedYAxis={currentExportPage.numKey}
+                                    hideConfig={true}
+                                    fullHeight={true}
+                                    colorPalette={['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']}
+                                />
+                            </div>
+                        </div>
+
+                        {/* SECTION 6: BUBBLE */}
+                        <div className="space-y-4 flex-1 pt-8 border-t-4 border-dashed border-white/10">
+                            <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 bg-primary text-background flex items-center justify-center rounded-lg font-black text-sm">6</span>
+                                <p className="text-xl font-black tracking-widest text-white/60">Bubble Distribution</p>
+                            </div>
+                            <div 
+                                className="h-[560px] rounded-3xl overflow-hidden relative"
+                                style={{
+                                    background: "linear-gradient(145deg, #050f15 0%, #081218 100%)",
+                                    border: "1px solid rgba(6,182,212,0.25)",
+                                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
+                            >
+                                <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #06b6d4, #3b82f6, #6366f1)" }} />
+                                <ChartGenerator
+                                    data={activeData}
+                                    isStatic={true}
+                                    forcedChartType="bubble"
+                                    forcedXAxis={currentExportPage.catKey}
+                                    forcedYAxis={currentExportPage.numKey}
+                                    hideConfig={true}
+                                    fullHeight={true}
+                                    colorPalette={['#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#10b981']}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-8 text-center text-gray-300">
+                            <p className="text-sm font-black tracking-[0.5em]">Vizly Analytics • Page 3/3</p>
                         </div>
                     </div>
                 )}
