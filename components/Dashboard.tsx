@@ -380,7 +380,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
         {/* Navbar */}
-        <Navbar onHistoryClick={() => setIsHistoryOpen(true)} />
+        <Navbar onHistoryClick={() => setIsHistoryOpen(true)} isHero={true} />
 
         <main className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Grid Accent */}
@@ -482,6 +482,7 @@ export default function Dashboard() {
                 
                 <div className="relative">
                     <div className="absolute -inset-4 bg-primary/5 rounded-[2rem] blur-3xl -z-10" />
+
                     <DataInput onDataParsed={handleDataParsed} />
                     
                     <div className="mt-6 flex flex-wrap justify-center gap-4">
@@ -615,13 +616,7 @@ export default function Dashboard() {
         <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-3 w-full md:w-auto">
             {/* Tools Group */}
             <div className="flex items-center gap-1 bg-foreground/5 p-1 rounded-xl border-2 border-border/10">
-                <button 
-                    onClick={toggleTheme}
-                    className="p-2 md:p-2.5 bg-background text-foreground border-2 border-border hover:bg-foreground hover:text-background rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"
-                    title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
-                >
-                    {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </button>
+                
                 <button 
                     onClick={() => setIsHistoryOpen(true)}
                     className="p-2 md:p-2.5 bg-background text-foreground border-2 border-border hover:bg-foreground hover:text-background rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"

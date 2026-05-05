@@ -93,6 +93,12 @@ export default function DataInput({ onDataParsed }: DataInputProps) {
     setError(null);
     const isExcel = file.name.match(/\.(xlsx|xls)$/i);
     const isJson = file.name.match(/\.json$/i) || file.type.includes("json");
+    const isCsv = file.name.match(/\.csv$/i) || file.type.includes("csv") || file.type === "text/csv";
+
+    if (!isExcel && !isJson && !isCsv) {
+      setError("Sorry, the file should be in csv, json and excel");
+      return;
+    }
 
     const reader = new FileReader();
 
