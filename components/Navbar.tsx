@@ -34,6 +34,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onHistoryClick, isHero }) => {
                             "p-2 border-2 border-border rounded-lg shadow-neo-sm hover:translate-y-[-2px] transition-all",
                             isHero ? "bg-white text-black" : "bg-card text-foreground"
                         )}
+                        aria-label="View BrutViz source code on GitHub"
+                        title="GitHub Repository"
                     >
                         <Github className="w-5 h-5" />
                     </a>

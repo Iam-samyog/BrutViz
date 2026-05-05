@@ -621,6 +621,7 @@ export default function Dashboard() {
                     onClick={() => setIsHistoryOpen(true)}
                     className="p-2 md:p-2.5 bg-background text-foreground border-2 border-border hover:bg-foreground hover:text-background rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"
                     title="View History"
+                    aria-label="View Data History"
                 >
                     <Clock className="w-5 h-5" />
                 </button>
@@ -628,6 +629,7 @@ export default function Dashboard() {
                     onClick={() => setIsStickersOpen(true)}
                     className="p-2 md:p-2.5 bg-background text-foreground border-2 border-border hover:bg-foreground hover:text-background rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"
                     title="Add Stickers"
+                    aria-label="Add Decorative Stickers"
                 >
                     <Sticker className="w-5 h-5" />
                 </button>
@@ -638,7 +640,8 @@ export default function Dashboard() {
                 <button 
                     onClick={() => setIsPresentationModeOpen(true)}
                     className="p-2 bg-primary text-background border-2 border-border hover:bg-primary/90 rounded-lg shadow-neo-sm active:translate-y-[2px] active:shadow-none transition-all"
-                    title="Presentation Mode"
+                    title="Enter Presentation Mode"
+                    aria-label="Open Fullscreen Presentation Mode"
                 >
                     <Play className="w-5 h-5" />
                 </button>
