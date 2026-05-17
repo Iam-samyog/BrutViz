@@ -1,0 +1,133 @@
+name: Weekly Comprehensive Review
+
+on:
+  schedule:
+    # Runs every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  comprehensive-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze Project Health
+        id: health
+        run: |
+          echo "## 📊 Weekly Project Health Report" > report.md
+          echo "" >> report.md
+          
+          # Count files
+          echo "### 📁 Codebase Statistics" >> report.md
+          echo "- Total TypeScript/TSX files: $(find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | wc -l)" >> report.md
+          echo "- Components: $(find ./components -name "*.tsx" 2>/dev/null | wc -l)" >> report.md
+          echo "- Total lines of code: $(find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')" >> report.md
+          echo "" >> report.md
+          
+          # Dependencies
+          echo "### 📦 Dependencies" >> report.md
+          echo "- Total dependencies: $(node -p 'Object.keys(require(\"./package.json\").dependencies || {}).length')" >> report.md
+          echo "- Dev dependencies: $(node -p 'Object.keys(require(\"./package.json\").devDependencies || {}).length')" >> report.md
+          echo "" >> report.md
+          
+          # Git activity
+          echo "### 🔄 Recent Activity (Last 7 Days)" >> report.md
+          echo "- Commits: $(git log --since='7 days ago' --oneline | wc -l)" >> report.md
+          echo "- Files changed: $(git log --since='7 days ago' --name-only --pretty=format: | sort -u | wc -l)" >> report.md
+          echo "" >> report.md
+          
+          cat report.md
+
+      - name: Check Build Performance
+        run: |
+          echo "### ⚡ Build Performance" >> report.md
+          START_TIME=$(date +%s)
+          npm run build || echo "Build issues detected"
+          END_TIME=$(date +%s)
+          BUILD_TIME=$((END_TIME - START_TIME))
+          echo "- Build time: ${BUILD_TIME}s" >> report.md
+          echo "" >> report.md
+
+      - name: Security Deep Scan
+        run: |
+          echo "### 🔒 Security Analysis" >> report.md
+          npm audit --json > audit.json || true
+          
+          CRITICAL=$(cat audit.json | grep -o '"critical":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          HIGH=$(cat audit.json | grep -o '"high":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          MODERATE=$(cat audit.json | grep -o '"moderate":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          LOW=$(cat audit.json | grep -o '"low":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          
+          echo "- Critical: ${CRITICAL}" >> report.md
+          echo "- High: ${HIGH}" >> report.md
+          echo "- Moderate: ${MODERATE}" >> report.md
+          echo "- Low: ${LOW}" >> report.md
+          echo "" >> report.md
+
+      - name: Generate Improvement Recommendations
+        run: |
+          echo "### 💡 Recommendations" >> report.md
+          echo "" >> report.md
+          
+          # Check for large files
+          LARGE_FILES=$(find . -type f -size +100k -not -path "./node_modules/*" -not -path "./.next/*" -not -path "./.git/*" | head -5)
+          if [ ! -z "$LARGE_FILES" ]; then
+            echo "#### Large Files Detected" >> report.md
+            echo "Consider optimizing these files:" >> report.md
+            echo '```' >> report.md
+            echo "$LARGE_FILES" >> report.md
+            echo '```' >> report.md
+            echo "" >> report.md
+          fi
+          
+          # Check for test coverage
+          if [ ! -d "tests" ] && [ ! -d "test" ] && [ ! -d "__tests__" ]; then
+            echo "#### Testing" >> report.md
+            echo "- ⚠️ No test directory found. Consider adding tests for better code quality." >> report.md
+            echo "" >> report.md
+          fi
+          
+          # Check for CI/CD
+          if [ ! -f ".github/workflows/ci.yml" ]; then
+            echo "#### CI/CD" >> report.md
+            echo "- 💡 Consider adding a CI workflow for automated testing and deployment." >> report.md
+            echo "" >> report.md
+          fi
+          
+          echo "---" >> report.md
+          echo "*Generated on $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> report.md
+
+      - name: Create Weekly Report Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Weekly Project Health Report - ${new Date().toISOString().split('T')[0]}`,
+              body: report,
+              labels: ['weekly-report', 'automated', 'metrics']
+            });
